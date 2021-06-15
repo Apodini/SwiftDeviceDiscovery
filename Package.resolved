@@ -1,0 +1,34 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "Socket",
+        "repositoryURL": "https://github.com/IBM-Swift/BlueSocket",
+        "state": {
+          "branch": null,
+          "revision": "c9894fd117457f1d006575fbfb2fdfd6f79eac03",
+          "version": "1.0.200"
+        }
+      },
+      {
+        "package": "Shout",
+        "repositoryURL": "https://github.com/jakeheis/Shout",
+        "state": {
+          "branch": "master",
+          "revision": "9612c13375599cfecf892d49e2d53d0143c04bc1",
+          "version": null
+        }
+      },
+      {
+        "package": "swift-argument-parser",
+        "repositoryURL": "https://github.com/apple/swift-argument-parser",
+        "state": {
+          "branch": null,
+          "revision": "986d191f94cec88f6350056da59c2e59e83d1229",
+          "version": "0.4.3"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
