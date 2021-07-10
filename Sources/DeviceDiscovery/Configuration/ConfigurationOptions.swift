@@ -8,7 +8,7 @@
 import Foundation
 import Network
 
-struct ConfigurationOption: Hashable {
+public struct ConfigurationOption: Hashable {
     static let username = ConfigurationOption("key_username")
     static let password = ConfigurationOption("key_password")
     static let runPostActions = ConfigurationOption("key_postActions")

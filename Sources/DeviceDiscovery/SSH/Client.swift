@@ -31,6 +31,10 @@ class Client {
         self.ipAdress = ipAdress
         self.port = port
     }
+    
+    deinit {
+        channel?.close()
+    }
 
     private func bootstrap() -> ClientBootstrap {
         let clientBootstrap = ClientBootstrap(group: group)

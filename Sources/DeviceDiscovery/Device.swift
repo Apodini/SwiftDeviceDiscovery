@@ -20,7 +20,7 @@ public struct DeviceIdentifier: RawRepresentable, Hashable, Equatable, Codable {
     }
 }
 
-protocol Device: CustomStringConvertible {
+public protocol Device: CustomStringConvertible {
     static var identifier: DeviceIdentifier { get }
     var configuration: [ConfigurationOption: Any] { get }
     
@@ -28,7 +28,8 @@ protocol Device: CustomStringConvertible {
     var runPostActions: ((Self, EventLoopGroup) -> Void)? { get }
     
     var macAddress: Int64? { get }
-    var ipAddress: IPAddressResolver? { get }
+    var ipv4Address: String? { get }
+    var ipv6Address: String? { get }
     var hostname: String? { get }
     
     init()
@@ -36,24 +37,31 @@ protocol Device: CustomStringConvertible {
     static func convert(from service: NetService) -> Self
 }
 
-extension Device {
+public extension Device {
     
     static func == (lhs: Self, rhs: Self) -> Bool {
         Self.identifier == Self.identifier
     }
     
-    public var macAddress: Int64? {
+    var macAddress: Int64? {
         service?.macAddress()
     }
     
-    public var ipAddress: IPAddressResolver? {
+    var ipv4Address: String? {
         guard let hostname = self.hostname else {
             return nil
         }
-        return IPAddressResolver(hostname)
+        return IPAddressResolver(hostname).ipv4Address
     }
     
-    public var hostname: String? {
+    var ipv6Address: String? {
+        guard let hostname = self.hostname else {
+            return nil
+        }
+        return IPAddressResolver(hostname).ipv6Address
+    }
+    
+    var hostname: String? {
         service?.hostname()
     }
     
@@ -61,7 +69,7 @@ extension Device {
         [.runPostActions: true]
     }
     
-    public var runPostActions: ((Self, EventLoopGroup) -> Void)? {
+    var runPostActions: ((Self, EventLoopGroup) -> Void)? {
         nil
     }
     
@@ -76,7 +84,7 @@ extension Device {
         type: \(Self.self),
         identifier: \(Self.identifier.rawValue),
         hostname: \(String(describing: hostname)),
-        ipAddress: \(String(describing: ipAddress?.ipv4Address)),
+        ipAddress: \(String(describing: ipv4Address)),
         macAddress: \(String(describing: macAddress)),
         service: \(service),
         configuration: \(configuration)

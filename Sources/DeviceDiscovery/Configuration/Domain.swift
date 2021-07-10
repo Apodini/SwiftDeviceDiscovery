@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum Domain {
+public enum Domain {
     case local
     case custom(String)
     

@@ -9,16 +9,20 @@ import Foundation
 import NIOLIFX
 import NIO
 
-struct Raspberry: Device {
-    static var identifier: DeviceIdentifier = DeviceIdentifier("_workstation._tcp.")
+public struct Raspberry: Device {
+    public static var identifier: DeviceIdentifier = DeviceIdentifier("_workstation._tcp.")
     
-    var service: NetService?
+    public var service: NetService?
     
-    var configuration: [ConfigurationOption : Any] {
+    public var configuration: [ConfigurationOption : Any] {
         [
             .username: "pi",
             .password: "rasp",
             .runPostActions: true
         ]
+    }
+    
+    public init() {
+        
     }
 }
