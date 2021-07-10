@@ -1,5 +1,5 @@
 //
-//  IPAddress.swift
+//  IPAddressResolver.swift
 //  DeviceDiscovery
 //
 //  Created by Felix Desiderato on 25.05.21.

@@ -2,30 +2,66 @@
   "object": {
     "pins": [
       {
-        "package": "Socket",
-        "repositoryURL": "https://github.com/IBM-Swift/BlueSocket",
-        "state": {
-          "branch": null,
-          "revision": "c9894fd117457f1d006575fbfb2fdfd6f79eac03",
-          "version": "1.0.200"
-        }
-      },
-      {
-        "package": "Shout",
-        "repositoryURL": "https://github.com/jakeheis/Shout",
-        "state": {
-          "branch": "master",
-          "revision": "9612c13375599cfecf892d49e2d53d0143c04bc1",
-          "version": null
-        }
-      },
-      {
         "package": "swift-argument-parser",
         "repositoryURL": "https://github.com/apple/swift-argument-parser",
         "state": {
           "branch": null,
           "revision": "986d191f94cec88f6350056da59c2e59e83d1229",
           "version": "0.4.3"
+        }
+      },
+      {
+        "package": "swift-crypto",
+        "repositoryURL": "https://github.com/apple/swift-crypto.git",
+        "state": {
+          "branch": null,
+          "revision": "3bea268b223651c4ab7b7b9ad62ef9b2d4143eb6",
+          "version": "1.1.6"
+        }
+      },
+      {
+        "package": "swift-log",
+        "repositoryURL": "https://github.com/apple/swift-log.git",
+        "state": {
+          "branch": null,
+          "revision": "5d66f7ba25daf4f94100e7022febf3c75e37a6c7",
+          "version": "1.4.2"
+        }
+      },
+      {
+        "package": "swift-nio",
+        "repositoryURL": "https://github.com/apple/swift-nio.git",
+        "state": {
+          "branch": null,
+          "revision": "d79e33308b0ac83326b0ead0ea6446e604b8162d",
+          "version": "2.30.0"
+        }
+      },
+      {
+        "package": "swift-nio-ip",
+        "repositoryURL": "https://github.com/PSchmiedmayer/Swift-NIO-IP.git",
+        "state": {
+          "branch": null,
+          "revision": "598f56ec73fba0630a1b49c6ff97ac2e2d565a9e",
+          "version": "0.0.1"
+        }
+      },
+      {
+        "package": "swift-nio-lifx",
+        "repositoryURL": "https://github.com/PSchmiedmayer/Swift-NIO-LIFX.git",
+        "state": {
+          "branch": "develop",
+          "revision": "71f133b3fbcab24802272cad64edbdc843ba9850",
+          "version": null
+        }
+      },
+      {
+        "package": "swift-nio-ssh",
+        "repositoryURL": "https://github.com/apple/swift-nio-ssh",
+        "state": {
+          "branch": null,
+          "revision": "bc1a91daf3ae35134fbca5655ed221668d0369d3",
+          "version": "0.3.0"
         }
       }
     ]
