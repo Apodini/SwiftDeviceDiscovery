@@ -33,7 +33,7 @@ class Client {
     }
     
     deinit {
-        channel?.close()
+        let _ = channel?.close()
     }
 
     private func bootstrap() -> ClientBootstrap {

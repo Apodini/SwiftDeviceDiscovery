@@ -10,7 +10,8 @@ let package = Package(
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "SwiftDeviceDiscovery",
-            targets: ["DeviceDiscovery"])
+            targets: ["DeviceDiscovery"]),
+        .executable(name: "SwiftDeviceDiscoveryExecutable", targets: ["DeviceDiscoveryExecutable"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -31,6 +32,11 @@ let package = Package(
                 .product(name: "NIOSSH", package: "swift-nio-ssh"),
                 .product(name: "NIOLIFX", package: "swift-nio-lifx")
             ]
+        ),
+        .target(name: "DeviceDiscoveryExecutable",
+                dependencies: [
+                    .target(name: "DeviceDiscovery")
+                ]
         ),
         .testTarget(
             name: "DeviceDiscoveryTests",

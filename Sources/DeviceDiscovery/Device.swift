@@ -12,6 +12,10 @@ import Network
 /// you are looking for in the network. For example: When looking for raspberry pis, that are using avahi to pushlish their service, set the identifier of a
 /// corresponding `Device` object to `_workstation._tcp.` to be able to discover them.
 public struct DeviceIdentifier: RawRepresentable, Hashable, Equatable, Codable {
+    public static var emptyIdentifier: DeviceIdentifier {
+        DeviceIdentifier("")
+    }
+    
     public let rawValue: String
     
     public init(rawValue: String) {
@@ -28,10 +32,6 @@ public struct DeviceIdentifier: RawRepresentable, Hashable, Equatable, Codable {
 public protocol Device: CustomStringConvertible {
     /// The identifer of the device. It has to match the type of the published service. See `DeviceIdentifier` for more infos.
     static var identifier: DeviceIdentifier { get }
-    /// The Configuration of the device. The key is a `ConfigurationOption`. There are default keys available.
-    /// You can create custom keys and look for the during `configure()`.
-    /// You can pass any value as the value property.
-    var configuration: [ConfigurationOption: Any] { get }
     /// The `NetService` that has been found in the network corresponding to the specified `identifier`.
     var service: NetService { get }
     /// An `Int64` object of the macAddress of the found service.
@@ -42,11 +42,8 @@ public protocol Device: CustomStringConvertible {
     var ipv6Address: String? { get }
     /// The hostname of the service.
     var hostname: String? { get }
-    /// Initializes a new device with the given `NetService`
-    init(_ service: NetService)
-    /// Configures the device. This does nothing on default.
-    /// You can assume that when calling `configure` most of the properties have been filled.
-    mutating func configure()
+    /// Initializes a new device with the given `NetService` and `DeviceIdentifier`
+    init(_ service: NetService, identifier: DeviceIdentifier)
 }
 
 public extension Device {
@@ -76,28 +73,14 @@ public extension Device {
     var hostname: String? {
         service.hostname()
     }
-    
-    var configuration: [ConfigurationOption: Any] {
-        [.runPostActions: true]
-    }
-    
-    var runPostActions: ((Self, EventLoopGroup) -> Void)? {
-        nil
-    }
-    
-    func configure() {
-        //no default implementation
-    }
-   
+
     var description: String {
         """
-        type: \(Self.self),
         identifier: \(Self.identifier.rawValue),
         hostname: \(String(describing: hostname)),
         ipAddress: \(String(describing: ipv4Address)),
         macAddress: \(String(describing: macAddress)),
-        service: \(service),
-        configuration: \(configuration)
+        service: \(service)
         """
     }
 }
@@ -121,5 +104,17 @@ extension String {
             result = result.replacingOccurrences(of: occurrence, with: with)
         }
         return result
+    }
+}
+
+/// A type agnostic implementation of `Device` that is used in `DeviceDiscovery`
+public struct AnyDevice: Device {
+    public static var identifier: DeviceIdentifier = .emptyIdentifier
+    
+    public var service: NetService
+
+    public init(_ service: NetService, identifier: DeviceIdentifier) {
+        self.service = service
+        Self.identifier = identifier
     }
 }

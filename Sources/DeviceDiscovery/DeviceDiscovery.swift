@@ -13,29 +13,37 @@ import NIO
 
 /// Responsible for running a discovery in the given domain for the specified `Device.Type`.
 /// The discovery can be configured using the `configuration` property of the device object.
-public class DeviceDiscovery<T: Device>: NSObject, NetServiceBrowserDelegate, NetServiceDelegate {
-    
-    typealias Configration = [ConfigurationOption: String]
+public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDelegate {
+    /// A public typealias for the configuration dictionary.
+    public typealias Configration = [ConfigurationOption: Any]
     typealias PerformedAction = [ActionIdentifier: Int]
     
     private var identifier: DeviceIdentifier
     private var domain: Domain
+    private var eventLoopGroup: EventLoopGroup
     
     private let browser = NetServiceBrowser()
     private let logger = Logger(label: "device.discovery: discovery")
     
-    private var devices: [T]
+    private var devices: [AnyDevice]
     
     /// The `PostDiscoveryAction`s that will be performed on found devices.
     /// The default action is `LIFXDeviceDiscoveryAction`
-    var actions: [PostDiscoveryAction.Type]
+    public var actions: [PostDiscoveryAction.Type]
     
-    private var eventLoopGroup: EventLoopGroup
-    
+    /// The configuration dictionary of `[ConfigurationOption: Any]` that will be used for this device discovery.
+    /// See `.defaultConfiguration` for the default values set.
+    /// Set this property to account for custom configurations.
+    public var configuration: Configration = .defaultConfiguration
+    /// When set, allows the user to perform custom actions on with user defined `ConfigurationOption`.
+    /// You can assume that most properties of `Device` have already been set and can be used.
+    public var onConfiguration: ((AnyDevice, Configration) -> Void)?
+
     /// Initializes a `DeviceDiscovery` object
+    /// - Parameter identifier: The `DeviceIdentifier` that should be searched for.
     /// - Parameter domain: The `Domain` in which the `DeviceDiscovery` will be looking for.
-    public init(domain: Domain) {
-        self.identifier = T.identifier
+    public init(_ identifier: DeviceIdentifier, domain: Domain = .local) {
+        self.identifier = identifier
         self.domain = domain
         self.devices = []
         self.eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
@@ -78,18 +86,19 @@ public class DeviceDiscovery<T: Device>: NSObject, NetServiceBrowserDelegate, Ne
     public func netServiceBrowser(_ browser: NetServiceBrowser, didFind service: NetService, moreComing: Bool) {
         logger.info("Found service: \(service)")
         
-        let device = T.init(service)
+        let device = AnyDevice(service, identifier: self.identifier)
         devices.append(device)
     }
     
     private func runPostDiscoveryActions() throws -> [DiscoveryResult] {
         var results: [DiscoveryResult] = []
-        for var device in self.devices {
+        for device in self.devices {
             logger.debug("Configure device: \(String(describing: device.hostname))")
-            device.configure()
+            // Run configure method for every device that is found.
+            onConfiguration?(device, self.configuration)
             
             logger.notice("Performing post discovery actions for \(String(describing: device.hostname))")
-            guard let runPostActions = device.configuration.typedValue(for: .runPostActions, to: Bool.self),
+            guard let runPostActions = self.configuration.typedValue(for: .runPostActions, to: Bool.self),
                   runPostActions else {
                 logger.notice("No post found actions configured for \(String(describing: device.hostname))")
                 return []

@@ -19,16 +19,23 @@ public struct ConfigurationOption: Hashable {
     
     var value: String
     
-    init(_ value: String) {
+    public init(_ value: String) {
         self.value = value
     }
 }
 
-extension Dictionary where Key == ConfigurationOption {
+public extension Dictionary where Key == ConfigurationOption, Value == Any {
     func typedValue<T: Any>(for key: ConfigurationOption, to: T.Type) -> T? {
         if let value = self[key] as? T {
             return value
         }
         return nil
+    }
+    
+    /// The default configuration for any device discovery. On default, `.runPostActions` is set to true.
+    static var defaultConfiguration: Self<ConfigurationOption, Any> {
+        [
+            .runPostActions: true
+        ]
     }
 }
