@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  Device.swift
 //  
 //
 //  Created by Felix Desiderato on 10/07/2021.
@@ -8,6 +8,9 @@ import Foundation
 import NIO
 import Network
 
+/// An identifier object that is used to identify a `Device` object. When set for a `Device`, make sure it matches the type of the published service
+/// you are looking for in the network. For example: When looking for raspberry pis, that are using avahi to pushlish their service, set the identifier of a
+/// corresponding `Device` object to `_workstation._tcp.` to be able to discover them.
 public struct DeviceIdentifier: RawRepresentable, Hashable, Equatable, Codable {
     public let rawValue: String
     
@@ -20,21 +23,30 @@ public struct DeviceIdentifier: RawRepresentable, Hashable, Equatable, Codable {
     }
 }
 
+/// A generic protocol specifying the properties of a `Device`.
+/// A Device can be passed as generic parameter to an `DeviceDiscovery`, telling it to look for that device.
 public protocol Device: CustomStringConvertible {
+    /// The identifer of the device. It has to match the type of the published service. See `DeviceIdentifier` for more infos.
     static var identifier: DeviceIdentifier { get }
+    /// The Configuration of the device. The key is a `ConfigurationOption`. There are default keys available.
+    /// You can create custom keys and look for the during `configure()`.
+    /// You can pass any value as the value property.
     var configuration: [ConfigurationOption: Any] { get }
-    
-    var service: NetService? { get set }
-    var runPostActions: ((Self, EventLoopGroup) -> Void)? { get }
-    
+    /// The `NetService` that has been found in the network corresponding to the specified `identifier`.
+    var service: NetService { get }
+    /// An `Int64` object of the macAddress of the found service.
     var macAddress: Int64? { get }
+    /// An `String` representation of the ipv4 address of the service.
     var ipv4Address: String? { get }
+    /// An `String` representation of the ipv6 address of the service.
     var ipv6Address: String? { get }
+    /// The hostname of the service.
     var hostname: String? { get }
-    
-    init()
-    
-    static func convert(from service: NetService) -> Self
+    /// Initializes a new device with the given `NetService`
+    init(_ service: NetService)
+    /// Configures the device. This does nothing on default.
+    /// You can assume that when calling `configure` most of the properties have been filled.
+    mutating func configure()
 }
 
 public extension Device {
@@ -44,7 +56,7 @@ public extension Device {
     }
     
     var macAddress: Int64? {
-        service?.macAddress()
+        service.macAddress()
     }
     
     var ipv4Address: String? {
@@ -62,7 +74,7 @@ public extension Device {
     }
     
     var hostname: String? {
-        service?.hostname()
+        service.hostname()
     }
     
     var configuration: [ConfigurationOption: Any] {
@@ -73,12 +85,10 @@ public extension Device {
         nil
     }
     
-    static func convert(from service: NetService) -> Self {
-        var me = Self.init()
-        me.service = service
-        return me
+    func configure() {
+        //no default implementation
     }
-    
+   
     var description: String {
         """
         type: \(Self.self),
@@ -93,10 +103,6 @@ public extension Device {
 }
 
 extension NetService {
-    func convert<T: Device>(to instance: T.Type) -> T {
-        instance.convert(from: self)
-    }
-    
     func hostname() -> String {
         name.components(separatedBy: .whitespaces)[0]
     }

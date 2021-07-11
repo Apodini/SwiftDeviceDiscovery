@@ -34,8 +34,7 @@ extension String {
     }
 }
 
-class IPAddressResolver {
-    
+internal struct IPAddressResolver {
     var hostName: String
     var ipv4Address: String?
     var ipv6Address: String?
@@ -45,7 +44,7 @@ class IPAddressResolver {
         resolveIPAdress(hostName)
     }
     
-    private func resolveIPAdress(_ host: String) {
+    private mutating func resolveIPAdress(_ host: String) {
         var streamError = CFStreamError()
         
         let cfHost = CFHostCreateWithName(nil, host as CFString).takeRetainedValue()
@@ -63,26 +62,19 @@ class IPAddressResolver {
                 let addrin = addressData.bytes.assumingMemoryBound(to: sockaddr.self).pointee
                 if addressData.length >= MemoryLayout<sockaddr>.size && addrin.sa_family == UInt8(AF_INET) {
                     addressToString(data: addressData as Data)
-//                    return addressData as Data
                 }
             }
-        } else {
-            print("status was false")
         }
-        
     }
     
-    private func addressToString(data: Data) {
+    private mutating func addressToString(data: Data) {
         return data.withUnsafeBytes {
             let family = $0.baseAddress!.assumingMemoryBound(to: sockaddr_storage.self).pointee.ss_family
             if family == numericCast(AF_INET) {
                 ipv4Address = String(address: $0.baseAddress!.assumingMemoryBound(to: sockaddr_in.self).pointee.sin_addr)
-//                return String(address: $0.baseAddress!.assumingMemoryBound(to: sockaddr_in.self).pointee.sin_addr)
             } else if family == numericCast(AF_INET6) {
                 ipv6Address = String(address: $0.baseAddress!.assumingMemoryBound(to: sockaddr_in6.self).pointee.sin6_addr)
-//                return String(address: $0.baseAddress!.assumingMemoryBound(to: sockaddr_in6.self).pointee.sin6_addr)
             }
-//            return nil
         }
     }
 }
