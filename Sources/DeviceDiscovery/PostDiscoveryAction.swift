@@ -64,6 +64,6 @@ public struct LIFXDeviceDiscoveryAction: PostDiscoveryAction {
 }
 
 public struct DiscoveryResult {
-    let device: Device
-    let foundEndDevices: [ActionIdentifier: Int]
+    public let device: Device
+    public let foundEndDevices: [ActionIdentifier: Int]
 }
