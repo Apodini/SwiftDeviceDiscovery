@@ -36,15 +36,10 @@ public class DummySSHClient {
         return result
     }
     
-    public func createDirectory(_ dirName: String, path: String = "", assertSuccessfulExecution: Bool = true) throws {
+    public func createDirectory(_ dirName: String, path: String = "") throws {
         let path = path + "/"
-        guard let result = try self.session?.capture("sudo mkdir \(path)\(dirName)") else {
-            throw DummySSHError.resultWasNil
-        }
-        guard result.status == EXIT_SUCCESS else {
-            logger.error("error code: \(result.status), output: \(result.output)")
-            fatalError("An error occurred during an execution with success assertion")
-        }
+        try self.assertSuccessfulExecution("sudo mkdir \(path)\(dirName)")
+        try self.assertSuccessfulExecution("sudo chmod 777 \(path)\(dirName)")
     }
     
     @discardableResult
