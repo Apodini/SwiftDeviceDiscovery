@@ -39,7 +39,7 @@ public protocol PostDiscoveryAction {
     /// - Parameter device: The `Device` object the action is performed on
     /// - Parameter eventLoopGroup: A `EventLoopGroup`.
     /// - Returns Int: numberOfFoundDevices.
-    func run<Device>(_ device: Device, on eventLoopGroup: EventLoopGroup, client: SSHClient?) throws -> EventLoopFuture<Int>
+    func run(_ device: Device, on eventLoopGroup: EventLoopGroup, client: SSHClient?) throws -> EventLoopFuture<Int>
 }
 
 public struct DiscoveryResult {
