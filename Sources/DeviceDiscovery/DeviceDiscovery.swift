@@ -49,9 +49,7 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
         self.eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         
         // Default actions
-        self.actions = [
-            LIFXDeviceDiscoveryAction.self
-        ]
+        self.actions = []
     }
     
     /// Runs the device discovery with the given timeout.
@@ -90,6 +88,16 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
         devices.append(device)
     }
     
+    private func sshClient(for device: Device) throws -> SSHClient? {
+        guard let username = configuration.typedValue(for: .username, to: String.self),
+              let password = configuration.typedValue(for: .password, to: String.self),
+              let ipAddress = device.ipv4Address else {
+            return nil
+        }
+
+        return try SSHClient(username: username, password: password, ipAdress: ipAddress, autoBootstrap: false)
+    }
+    
     private func runPostDiscoveryActions() throws -> [DiscoveryResult] {
         var results: [DiscoveryResult] = []
         for device in self.devices {
@@ -104,13 +112,15 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
                 return []
             }
             var performedActions: PerformedAction = [:]
+            let sshClient = try sshClient(for: device)
+            
             for Action in actions {
                 logger.info("Running action \(Action.identifier)")
                 let act = Action.init()
-                guard let foundDevices = try act.run(device, on: self.eventLoopGroup) else {
-                    logger.error("Could not retrieve number of found devices for action \(Action.identifier)")
-                    continue
-                }
+                let foundDevices = try act.run(device, on: self.eventLoopGroup, client: sshClient).wait()
+                
+                logger.info("Found \(foundDevices) devices of type \(Action.identifier) for \(device.hostname)")
+                
                 performedActions[Action.identifier] = foundDevices
             }
             results.append(DiscoveryResult(device: device, foundEndDevices: performedActions))

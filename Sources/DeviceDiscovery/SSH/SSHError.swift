@@ -8,9 +8,12 @@
 import Foundation
 
 enum SSHError: Swift.Error {
-    case commandExecFailed
+    case commandExecFailed(String)
     case invalidChannelType
     case invalidData
     case channelNotFound(msg: String)
+    case failedSuccessfulExecution(String)
+    case remoteDirAlreadyExists
+    case postDiscoveryActionFailed(ActionIdentifier)
 }
 

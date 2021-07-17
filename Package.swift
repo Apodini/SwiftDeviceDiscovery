@@ -18,9 +18,7 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-argument-parser", from: "0.4.0"),
         .package(url: "https://github.com/apple/swift-nio-ssh", from: "0.3.0"),
-        .package(name: "swift-nio-lifx", url: "https://github.com/PSchmiedmayer/Swift-NIO-LIFX.git", .branch("develop")),
-        .package(url: "https://github.com/jakeheis/Shout", .branch("master"))
-//        .package(name: "swift-nio-lifx", path: "/Users/felice/Documents/Swift-NIO-LIFX")
+        .package(name: "swift-nio-lifx", url: "https://github.com/PSchmiedmayer/Swift-NIO-LIFX.git", .branch("develop"))
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -31,8 +29,7 @@ let package = Package(
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "NIOSSH", package: "swift-nio-ssh"),
-                .product(name: "NIOLIFX", package: "swift-nio-lifx"),
-                .product(name: "Shout", package: "Shout"),
+                .product(name: "NIOLIFX", package: "swift-nio-lifx")
             ]
         ),
         .target(name: "DeviceDiscoveryExecutable",

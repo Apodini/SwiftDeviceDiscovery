@@ -22,6 +22,12 @@ public struct ActionIdentifier: RawRepresentable, Hashable, Equatable, Codable {
     }
 }
 
+extension ActionIdentifier: CustomStringConvertible {
+    public var description: String {
+        rawValue
+    }
+}
+
 /// A protocol that can be implemented to specify a `PostDiscoveryAction`. These will be executed after the discovery phase and
 /// allow to for custom actions on the found device. Typically it is used to search for end devices that are connected to the found device.
 public protocol PostDiscoveryAction {
@@ -33,34 +39,7 @@ public protocol PostDiscoveryAction {
     /// - Parameter device: The `Device` object the action is performed on
     /// - Parameter eventLoopGroup: A `EventLoopGroup`.
     /// - Returns Int: numberOfFoundDevices.
-    func run<Device>(_ device: Device, on eventLoopGroup: EventLoopGroup) throws -> Int?
-}
-
-/// A Default implementation of a `PostDiscoveryAction`. It looks for connected LIFX smart lamps using NIOLIFX.
-public struct LIFXDeviceDiscoveryAction: PostDiscoveryAction {
-    public static var identifier: ActionIdentifier {
-        ActionIdentifier("LIFX")
-    }
-    
-    var networkDevice: NIONetworkDevice? {
-        let networkInterfaces = try! System.enumerateDevices()
-        for interface in networkInterfaces {
-            if case .v4 = interface.address, interface.name == "en0" {
-                return interface
-            }
-        }
-        return nil
-    }
-    
-    public func run<Device>(_ device: Device, on eventLoopGroup: EventLoopGroup) throws -> Int? {
-        guard let netDevice = networkDevice else { return nil }
-        
-        let manager = try LIFXDeviceManager(using: netDevice, on: eventLoopGroup, logLevel: .info)
-        try manager.discoverDevices().wait()
-        return manager.devices.count
-    }
-    
-    public init() {}
+    func run<Device>(_ device: Device, on eventLoopGroup: EventLoopGroup, client: SSHClient?) throws -> EventLoopFuture<Int>
 }
 
 public struct DiscoveryResult {

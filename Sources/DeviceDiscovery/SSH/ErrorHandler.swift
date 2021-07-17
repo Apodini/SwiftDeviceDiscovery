@@ -14,7 +14,7 @@ class ErrorHandler: ChannelInboundHandler {
     typealias InboundIn = Any
     
     func errorCaught(context: ChannelHandlerContext, error: Error) {
-        Client.logger.error("Error caught during ssh execution: \(error)")
+        SSHClient.logger.error("Error caught during ssh execution: \(error)")
         let _ = context.close()
     }
 }

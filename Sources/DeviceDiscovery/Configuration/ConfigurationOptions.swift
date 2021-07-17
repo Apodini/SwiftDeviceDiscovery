@@ -11,11 +11,11 @@ import Network
 /// A `ConfigurationOption` encapsulates a `String` value and is used as a key in a `Device` configuration property.
 public struct ConfigurationOption: Hashable {
     /// A default key specifying the username for a possible ssh injection.
-    static let username = ConfigurationOption("key_username")
+    public static let username = ConfigurationOption("key_username")
     /// A default key specifying the password for a possible ssh injection.
-    static let password = ConfigurationOption("key_password")
+    public static let password = ConfigurationOption("key_password")
     /// A default key specifying if the `DeviceDiscovery` should perform post discovery actions on this device.
-    static let runPostActions = ConfigurationOption("key_postActions")
+    public static let runPostActions = ConfigurationOption("key_postActions")
     
     var value: String
     
