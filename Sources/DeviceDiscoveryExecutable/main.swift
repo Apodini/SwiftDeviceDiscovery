@@ -27,20 +27,9 @@ class Tester {
                 print("hello")
             }
         }
+        
         let results = try discovery.run(1)
-        let client = try SSHClient(username: "pi", password: "rasp", ipAdress: "192.168.2.117")
-        let remoteURL = URL(string: "/usr/deployment")
-        try client.fileManager.createDir(on: remoteURL!)
     }
     
 }
 try Tester.main()
-
-
-//
-//let (reason, output) = try client.fileManager.copyResources(from: URL(string: "/Users/felice/Downloads/ENS-Englisch")!, to: URL(string: "/usr/deployment")!)
-//print((reason, output))
-
-
-
-

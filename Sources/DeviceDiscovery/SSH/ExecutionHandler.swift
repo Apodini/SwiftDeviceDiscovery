@@ -27,7 +27,7 @@ public final class ExecutionHandler: ChannelDuplexHandler {
         guard case let .byteBuffer(buffer) = unwrappedData.data else {
             fatalError("wrong type")
         }
-        intermediateResult = String(buffer: buffer)
+        intermediateResult.append(String(buffer: buffer))
         context.fireChannelRead(data)
     }
     

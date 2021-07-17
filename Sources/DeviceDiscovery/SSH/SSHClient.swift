@@ -41,9 +41,8 @@ public class SSHClient {
     }
     
     deinit {
-        try! group.syncShutdownGracefully()
-        try! childChannel?.close().wait()
         try! channel?.close().wait()
+        try! group.syncShutdownGracefully()
     }
     
     private func bootstrap() throws {
