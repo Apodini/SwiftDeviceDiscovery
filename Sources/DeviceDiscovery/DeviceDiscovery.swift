@@ -14,8 +14,7 @@ import NIO
 /// Responsible for running a discovery in the given domain for the specified `Device.Type`.
 /// The discovery can be configured using the `configuration` property of the device object.
 public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDelegate {
-    /// A public typealias for the configuration dictionary.
-    public typealias Configration = [ConfigurationOption: Any]
+    /// A public typealias for the results of the performed post discvoery actions
     typealias PerformedAction = [ActionIdentifier: Int]
     
     private var identifier: DeviceIdentifier
@@ -31,13 +30,13 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
     /// The default action is `LIFXDeviceDiscoveryAction`
     public var actions: [PostDiscoveryAction.Type]
     
-    /// The configuration dictionary of `[ConfigurationOption: Any]` that will be used for this device discovery.
+    /// The configuration storage that will be used for this device discovery.
     /// See `.defaultConfiguration` for the default values set.
-    /// Set this property to account for custom configurations.
-    public var configuration: Configration = .defaultConfiguration
+    /// Add  `ConfigurationProperties` to account for custom configurations.
+    public var configuration: ConfigurationStorage = ConfigurationStorage.shared
     /// When set, allows the user to perform custom actions on with user defined `ConfigurationOption`.
     /// You can assume that most properties of `Device` have already been set and can be used.
-    public var onConfiguration: ((AnyDevice, Configration) -> Void)?
+    public var onConfiguration: ((AnyDevice, ConfigurationStorage) -> Void)?
 
     /// Initializes a `DeviceDiscovery` object
     /// - Parameter identifier: The `DeviceIdentifier` that should be searched for.

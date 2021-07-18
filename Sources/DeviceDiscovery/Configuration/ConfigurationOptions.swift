@@ -8,14 +8,14 @@
 import Foundation
 import Network
 
-/// A `ConfigurationOption` encapsulates a `String` value and is used as a key in a `Device` configuration property.
-public struct ConfigurationOption: Hashable {
+/// A `ConfigurationProperty` encapsulates a `String` value and is used as a key in a `Device` configuration property.
+public struct ConfigurationProperty: Hashable {
     /// A default key specifying the username for a possible ssh injection.
-    public static let username = ConfigurationOption("key_username")
+    public static let username = ConfigurationProperty("key_username")
     /// A default key specifying the password for a possible ssh injection.
-    public static let password = ConfigurationOption("key_password")
+    public static let password = ConfigurationProperty("key_password")
     /// A default key specifying if the `DeviceDiscovery` should perform post discovery actions on this device.
-    public static let runPostActions = ConfigurationOption("key_postActions")
+    public static let runPostActions = ConfigurationProperty("key_postActions")
     
     var value: String
     
@@ -24,8 +24,8 @@ public struct ConfigurationOption: Hashable {
     }
 }
 
-public extension Dictionary where Key == ConfigurationOption, Value == Any {
-    func typedValue<T: Any>(for key: ConfigurationOption, to: T.Type) -> T? {
+public extension Dictionary where Key == ConfigurationProperty, Value == Any {
+    func typedValue<T: Any>(for key: ConfigurationProperty, to: T.Type) -> T? {
         if let value = self[key] as? T {
             return value
         }
@@ -37,5 +37,58 @@ public extension Dictionary where Key == ConfigurationOption, Value == Any {
         [
             .runPostActions: true
         ]
+    }
+}
+
+/// A local storage for all configuration properties that are used for the device discovery.
+public struct ConfigurationStorage: ExpressibleByDictionaryLiteral {
+    public init(dictionaryLiteral elements: (ConfigurationProperty, Any)...) {
+        self.init(from: [ConfigurationProperty: Any](uniqueKeysWithValues: elements))
+    }
+    /// Key alias of `ExpressibleByDictionaryLiteral`
+    public typealias Key = ConfigurationProperty
+    /// Value alias of `ExpressibleByDictionaryLiteral`
+    public typealias Value = Any
+    /// The singleton of the `ConfigurationStorage`
+    internal static var shared = ConfigurationStorage()
+    /// The internal storage of the saved values
+    internal var storage: [ConfigurationProperty: Any] = .defaultConfiguration
+
+    private init() { }
+    
+    /// Accesses the environment value associated with a custom key.
+    public subscript(key: ConfigurationProperty) -> Any? {
+        get {
+            storage[key]
+        }
+        set {
+            storage[key] = newValue
+        }
+    }
+    /// Returns the typed value of a given key
+    public func typedValue<T>(for key: ConfigurationProperty, to: T.Type) -> T? {
+        storage[key] as? T
+    }
+    /// Allows the initialization of the storage from a directory
+    public init(from config: [ConfigurationProperty: Any]) {
+        self.storage = config
+        Self.shared.storage = config
+    }
+    
+}
+
+/// A property wrapper of a configuration  that allows access to any configuration value from PostActions.
+@propertyWrapper
+public struct Configuration<Value> {
+    public var wrappedValue: Value {
+        if let value = ConfigurationStorage.shared.typedValue(for: key, to: Value.self) {
+            return value
+        }
+        fatalError("Configuration: No value found for key \(key)")
+    }
+    private var key: ConfigurationProperty
+    
+    public init(_ key: ConfigurationProperty) {
+        self.key = key
     }
 }
