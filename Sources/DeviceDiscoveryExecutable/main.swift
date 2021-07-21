@@ -28,7 +28,7 @@ class Tester {
             }
         }
         
-        let results = try discovery.run(1)
+        let _ = try discovery.run(1)
     }
     
 }

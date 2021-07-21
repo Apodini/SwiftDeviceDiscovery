@@ -1,64 +1,79 @@
 import NIO
 import Dispatch
 import NIOSSH
+import Logging
 
-
-public final class ExecutionHandler: ChannelDuplexHandler {
-    public typealias InboundIn = SSHChannelData
-    public typealias InboundOut = ByteBuffer
-    public typealias OutboundIn = ByteBuffer
-    public typealias OutboundOut = SSHChannelData
+final class ExecutionHandler: ChannelDuplexHandler {
+    typealias InboundIn = SSHChannelData
+    typealias InboundOut = ByteBuffer
+    typealias OutboundIn = ByteBuffer
+    typealias OutboundOut = SSHChannelData
     
-    private var responseHandler: ((String, Int32) -> Void)?
-    private var intermediateResult: String = ""
-    private var completionPromise: EventLoopPromise<Void>?
-    private var exitStatus: Int32?
+    private let initialShellResponse: String = "Debian GNU/Linux system"
     
-    public init() {}
+    private var responseHandler: ((String) -> Void)?
     
-    public func handlerAdded(context: ChannelHandlerContext) {
+    private var responsePromise: EventLoopPromise<String>?
+    
+    init() {}
+    
+    private func handleResponse(_ response: String) {
+        guard !response.contains(initialShellResponse) else {
+            return
+        }
+        
+        if let responseH = self.responseHandler {
+            responseH(response)
+        } else if self.responsePromise != nil {
+            responsePromise?.succeed(response)
+        } else {
+            print(response)
+        }
+        //invalidate responsehandler afterwards, as responseHandler is request specific
+        self.responseHandler = nil
+    }
+    
+    func handlerAdded(context: ChannelHandlerContext) {
         context.channel.setOption(ChannelOptions.allowRemoteHalfClosure, value: true).whenFailure { error in
             context.fireErrorCaught(error)
         }
     }
     
-    public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
+    func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let unwrappedData = self.unwrapInboundIn(data)
         guard case let .byteBuffer(buffer) = unwrappedData.data else {
             fatalError("wrong type")
         }
-        intermediateResult.append(String(buffer: buffer))
+        let response = String(buffer: buffer)
+        handleResponse(response)
+
         context.fireChannelRead(data)
     }
     
-    public func channelInactive(context: ChannelHandlerContext) {
-        print(#function)
-        guard let exitStatus = exitStatus, exitStatus == EXIT_SUCCESS else {
-            completionPromise?.fail(SSHError.commandExecFailed(intermediateResult))
-            self.responseHandler?(intermediateResult, EXIT_FAILURE)
-            return
-        }
-        completionPromise?.succeed(())
-        responseHandler?(intermediateResult, exitStatus)
+    func userInboundEventTriggered(context: ChannelHandlerContext, event: Any) {
+        print(event)
+        context.fireUserInboundEventTriggered(event)
     }
     
-    public func userInboundEventTriggered(context: ChannelHandlerContext, event: Any) {
+    func triggerUserOutboundEvent(context: ChannelHandlerContext, event: Any, promise: EventLoopPromise<Void>?) {
         switch event {
-        case let event as SSHChannelRequestEvent.ExitStatus:
-            self.exitStatus = Int32(event.exitStatus)
-            context.fireUserInboundEventTriggered(event)
+        case let event as SSHChannelRequestEvent.ShellRequest:
+            context.triggerUserOutboundEvent(event, promise: promise)
+        case let event as (ByteBuffer, ((String) -> Void)?):
+            self.responseHandler = event.1
+            self.write(context: context, data: self.wrapInboundOut(event.0), promise: promise)
+        case let event as (ByteBuffer, EventLoopPromise<String>):
+            self.responsePromise = event.1
+            self.write(context: context, data: self.wrapInboundOut(event.0), promise: promise)
+        case let event as ByteBuffer:
+            self.write(context: context, data: self.wrapInboundOut(event), promise: promise)
         default:
-            context.fireUserInboundEventTriggered(event)
+            context.triggerUserOutboundEvent(event, promise: promise)
         }
     }
-
-    public func triggerUserOutboundEvent(context: ChannelHandlerContext, event: Any, promise: EventLoopPromise<Void>?) {
-        guard let (buffer, responseHandler) = event as? (ByteBuffer, ((String, Int32) -> Void)?) else {
-            promise?.fail(SSHError.invalidData)
-            return
-        }
-        self.completionPromise = promise
-        self.responseHandler = responseHandler
-        let _ = context.triggerUserOutboundEvent(SSHChannelRequestEvent.ExecRequest(command: String(buffer: buffer), wantReply: false))
+    
+    func write(context: ChannelHandlerContext, data: NIOAny, promise: EventLoopPromise<Void>?) {
+        let data = self.unwrapOutboundIn(data)
+        context.writeAndFlush(self.wrapOutboundOut(SSHChannelData(type: .channel, data: .byteBuffer(data))), promise: promise)
     }
 }

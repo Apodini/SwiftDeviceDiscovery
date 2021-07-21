@@ -27,6 +27,7 @@ public struct DeviceIdentifier: RawRepresentable, Hashable, Equatable, Codable {
     }
 }
 
+// TODO: Might move this to a struct
 /// A generic protocol specifying the properties of a `Device`.
 /// A Device can be passed as generic parameter to an `DeviceDiscovery`, telling it to look for that device.
 public protocol Device: CustomStringConvertible {

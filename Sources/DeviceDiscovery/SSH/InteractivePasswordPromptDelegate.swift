@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  InteractivePasswordPromptDelegate.swift
 //  
 //
 //  Created by Felix Desiderato on 06/07/2021.
@@ -53,9 +53,5 @@ public class InteractivePasswordPromptDelegate: NIOSSHClientUserAuthenticationDe
 
 public enum SSHClientError: Swift.Error {
     case passwordAuthenticationNotSupported
-    case commandExecFailed
     case invalidChannelType
-    case invalidData
-    case rsyncLocalDirNotFound
-    case remoteDirAlreadyExists
 }
