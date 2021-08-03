@@ -4,6 +4,9 @@
 //
 //  Created by Felix Desiderato on 06/07/2021.
 //
+//
+// This code is based on the SwiftNIO SSH project: https://github.com/apple/swift-nio-ssh
+//
 
 import Dispatch
 import Foundation
@@ -15,17 +18,26 @@ public struct InteractivePasswordPromptDelegate: NIOSSHClientUserAuthenticationD
     let username: String
     let password: String
 
-    public func nextAuthenticationType(availableMethods: NIOSSHAvailableUserAuthenticationMethods, nextChallengePromise: EventLoopPromise<NIOSSHUserAuthenticationOffer?>) {
+    public func nextAuthenticationType(
+        availableMethods: NIOSSHAvailableUserAuthenticationMethods,
+        nextChallengePromise: EventLoopPromise<NIOSSHUserAuthenticationOffer?>) {
         guard availableMethods.contains(.password) else {
             print("Error: password auth not supported")
             nextChallengePromise.fail(SSHClientError.passwordAuthenticationNotSupported)
             return
         }
-        nextChallengePromise.succeed(NIOSSHUserAuthenticationOffer(username: self.username, serviceName: "", offer: .password(.init(password: self.password))))
+        nextChallengePromise.succeed(
+            NIOSSHUserAuthenticationOffer(
+                username: self.username,
+                serviceName: "",
+                offer: .password(.init(password: self.password))
+            )
+        )
     }
 }
 
 public enum SSHClientError: Swift.Error {
     case passwordAuthenticationNotSupported
     case invalidChannelType
+    case channelInitializationFailed
 }

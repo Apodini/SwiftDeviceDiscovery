@@ -9,7 +9,7 @@ import NIO
 import Network
 
 /// An identifier object that is used to identify a `Device` object. When set for a `Device`, make sure it matches the type of the published service
-/// you are looking for in the network. For example: When looking for raspberry pis, that are using avahi to pushlish their service, set the identifier of a
+/// you are looking for in the network. For example: When looking for raspberry pis, that are using avahi to publish their service, set the identifier of a
 /// corresponding `Device` object to `_workstation._tcp.` to be able to discover them.
 public struct DeviceIdentifier: RawRepresentable, Hashable, Equatable, Codable {
     public static var emptyIdentifier: DeviceIdentifier {
@@ -27,7 +27,6 @@ public struct DeviceIdentifier: RawRepresentable, Hashable, Equatable, Codable {
     }
 }
 
-// TODO: Might move this to a struct
 /// A generic protocol specifying the properties of a `Device`.
 /// A Device can be passed as generic parameter to an `DeviceDiscovery`, telling it to look for that device.
 public protocol Device: CustomStringConvertible {
@@ -48,33 +47,37 @@ public protocol Device: CustomStringConvertible {
 }
 
 public extension Device {
-    
-    static func == (lhs: Self, rhs: Self) -> Bool {
-        Self.identifier == Self.identifier
+    /// An instanciated identifier
+    var identifier: DeviceIdentifier {
+        Self.identifier
     }
-    
+    /// Static equal method
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.identifier == rhs.identifier
+    }
+    /// An `Int64` object of the macAddress of the found service.
     var macAddress: Int64? {
         service.macAddress()
     }
-    
+    /// An `String` representation of the ipv4 address of the service.
     var ipv4Address: String? {
         guard let hostname = self.hostname else {
             return nil
         }
         return IPAddressResolver(hostname).ipv4Address
     }
-    
+    /// An `String` representation of the ipv6 address of the service.
     var ipv6Address: String? {
         guard let hostname = self.hostname else {
             return nil
         }
         return IPAddressResolver(hostname).ipv6Address
     }
-    
+    /// The hostname of the service.
     var hostname: String? {
         service.hostname()
     }
-
+    /// A descriptionn of a `Device`
     var description: String {
         """
         identifier: \(Self.identifier.rawValue),

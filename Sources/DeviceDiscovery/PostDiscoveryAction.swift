@@ -42,7 +42,11 @@ public protocol PostDiscoveryAction {
     func run(_ device: Device, on eventLoopGroup: EventLoopGroup, client: SSHClient?) throws -> EventLoopFuture<Int>
 }
 
+/// Contains the final results of the discovery. Each result consists of the found `Device` and a dictionary mapping the `ActionIdentifier` of the
+/// `PostDiscoveryAction`s that were run for this discovery to the number of the found devices for that identifier.
 public struct DiscoveryResult {
+    /// The device the current discovery instance was looking for
     public let device: Device
+    /// All `PostDiscoveryAction`s that ran in this instance and the number of devices that were found under their identifier.
     public let foundEndDevices: [ActionIdentifier: Int]
 }

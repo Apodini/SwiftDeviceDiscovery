@@ -24,7 +24,7 @@ public struct ConfigurationProperty: Hashable {
     }
 }
 
-public extension Dictionary where Key == ConfigurationProperty, Value == Any {
+extension Dictionary where Key == ConfigurationProperty, Value == Any {
     func typedValue<T: Any>(for key: ConfigurationProperty, to: T.Type) -> T? {
         if let value = self[key] as? T {
             return value
@@ -33,7 +33,7 @@ public extension Dictionary where Key == ConfigurationProperty, Value == Any {
     }
     
     /// The default configuration for any device discovery. On default, `.runPostActions` is set to true.
-    static var defaultConfiguration: Self<ConfigurationOption, Any> {
+    static var defaultConfiguration: [ConfigurationProperty: Any] {
         [
             .runPostActions: true
         ]
@@ -74,12 +74,12 @@ public struct ConfigurationStorage: ExpressibleByDictionaryLiteral {
         self.storage = config
         Self.shared.storage = config
     }
-    
 }
 
 /// A property wrapper of a configuration  that allows access to any configuration value from PostActions.
 @propertyWrapper
 public struct Configuration<Value> {
+    /// The wrapped value of the Configuration
     public var wrappedValue: Value {
         if let value = ConfigurationStorage.shared.typedValue(for: key, to: Value.self) {
             return value
@@ -88,6 +88,7 @@ public struct Configuration<Value> {
     }
     private var key: ConfigurationProperty
     
+    /// Initializes a Configuration with a `ConfigurationProperty`
     public init(_ key: ConfigurationProperty) {
         self.key = key
     }

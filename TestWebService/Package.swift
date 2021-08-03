@@ -25,9 +25,9 @@ let package = Package(
             .product(name: "Apodini", package: "Apodini"),
             .product(name: "ApodiniREST", package: "Apodini"),
             .product(name: "ApodiniOpenAPI", package: "Apodini")
-        ]),
+            ]),
         .testTarget(
             name: "TestWebServiceTests",
-            dependencies: ["TestWebService"]),
+            dependencies: ["TestWebService"])
     ]
 )

@@ -58,7 +58,7 @@ internal struct IPAddressResolver {
             }
             
             for address in addresses {
-                let addressData = address as! NSData
+                let addressData = address as! NSData // swiftlint:disable:this force_cast
                 let addrin = addressData.bytes.assumingMemoryBound(to: sockaddr.self).pointee
                 if addressData.length >= MemoryLayout<sockaddr>.size && addrin.sa_family == UInt8(AF_INET) {
                     addressToString(data: addressData as Data)
@@ -68,12 +68,12 @@ internal struct IPAddressResolver {
     }
     
     private mutating func addressToString(data: Data) {
-        return data.withUnsafeBytes {
-            let family = $0.baseAddress!.assumingMemoryBound(to: sockaddr_storage.self).pointee.ss_family
+        data.withUnsafeBytes {
+            let family = $0.baseAddress.unsafelyUnwrapped.assumingMemoryBound(to: sockaddr_storage.self).pointee.ss_family
             if family == numericCast(AF_INET) {
-                ipv4Address = String(address: $0.baseAddress!.assumingMemoryBound(to: sockaddr_in.self).pointee.sin_addr)
+                ipv4Address = String(address: $0.baseAddress.unsafelyUnwrapped.assumingMemoryBound(to: sockaddr_in.self).pointee.sin_addr)
             } else if family == numericCast(AF_INET6) {
-                ipv6Address = String(address: $0.baseAddress!.assumingMemoryBound(to: sockaddr_in6.self).pointee.sin6_addr)
+                ipv6Address = String(address: $0.baseAddress.unsafelyUnwrapped.assumingMemoryBound(to: sockaddr_in6.self).pointee.sin6_addr)
             }
         }
     }

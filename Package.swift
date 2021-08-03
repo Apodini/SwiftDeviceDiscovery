@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.4
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -32,13 +32,14 @@ let package = Package(
                 .product(name: "NIOLIFX", package: "swift-nio-lifx")
             ]
         ),
-        .target(name: "DeviceDiscoveryExecutable",
-                dependencies: [
-                    .target(name: "DeviceDiscovery")
-                ]
+        .executableTarget(
+            name: "DeviceDiscoveryExecutable",
+            dependencies: [
+                .target(name: "DeviceDiscovery")
+            ]
         ),
         .testTarget(
             name: "DeviceDiscoveryTests",
-            dependencies: ["DeviceDiscovery"]),
+            dependencies: ["DeviceDiscovery"])
     ]
 )

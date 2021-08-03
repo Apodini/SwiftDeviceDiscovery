@@ -13,7 +13,7 @@ public extension SSHClient {
     /// A simple remote file manager that offers the basic file operations
     class RemoteFileManager {
         /// SInce one might connect to devices running different OSs, this is reflected by this enum
-        enum OS {
+        enum OperatingSystem {
             case linux, windows, mac
 
             var osSpecificPrefix: String {
@@ -27,19 +27,19 @@ public extension SSHClient {
         }
 
         private var client: SSHClient
-        private var os: OS
+        private var operatingSystem: OperatingSystem
 
         /// Initializes a new `RemoteFileManager`
         /// - Parameter client: the `SSHClient` the file operations are executed on
         /// - Parameter logger: A logger instance used for output
         /// - Parameter os: The os of the remote device. Default is linux
-        init(_ client: SSHClient, os: OS = .linux) {
+        init(_ client: SSHClient, operatingSystem: OperatingSystem = .linux) {
             self.client = client
-            self.os = os
+            self.operatingSystem = operatingSystem
         }
 
         private func command(_ command: String) -> String {
-            let prefix: String = os.osSpecificPrefix
+            let prefix: String = operatingSystem.osSpecificPrefix
             return prefix.appending(command)
         }
 

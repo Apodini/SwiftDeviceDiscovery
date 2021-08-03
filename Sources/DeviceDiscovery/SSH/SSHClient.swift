@@ -4,6 +4,8 @@
 //
 //  Created by Felix Desiderato on 08/07/2021.
 //
+// This code is based on the SwiftNIO SSH project: https://github.com/apple/swift-nio-ssh
+//
 
 import Foundation
 import NIO
@@ -23,14 +25,14 @@ public class SSHClient {
     private let port: Int //22
     
     private var channel: Channel?
-    public var childChannel: Channel?
+    private var childChannel: Channel?
     
     private var unwrappedChildChannel: Channel {
         childChannel.unsafelyUnwrapped
     }
     
     /// A instance of `RemoteFileManager` that allows for easy file operations
-    public private(set) lazy var fileManager: RemoteFileManager = RemoteFileManager(self)
+    public private(set) lazy var fileManager = RemoteFileManager(self)
     
     private let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     
@@ -51,7 +53,9 @@ public class SSHClient {
     }
     
     deinit {
+        // swiftlint:disable:next force_try
         try! channel?.close().wait()
+        // swiftlint:disable:next force_try
         try! group.syncShutdownGracefully()
     }
     
@@ -60,23 +64,37 @@ public class SSHClient {
     public func bootstrap() throws {
         let clientBootstrap = ClientBootstrap(group: group)
             .channelInitializer { channel in
-                channel.pipeline.addHandlers([NIOSSHHandler(role: .client(.init(userAuthDelegate: InteractivePasswordPromptDelegate(username: self.username, password: self.password), serverAuthDelegate: AcceptAllKeysDelegate())), allocator: channel.allocator, inboundChildChannelInitializer: nil), ErrorHandler()])
+                channel.pipeline.addHandlers([
+                    NIOSSHHandler(role: .client(.init(
+                                            userAuthDelegate: InteractivePasswordPromptDelegate(username: self.username, password: self.password),
+                                            serverAuthDelegate: AcceptAllKeysDelegate())),
+                                  allocator: channel.allocator,
+                                  inboundChildChannelInitializer: nil),
+                    ErrorHandler()
+                ])
             }
             .channelOption(ChannelOptions.socket(SocketOptionLevel(SOL_SOCKET), SO_REUSEADDR), value: 1)
             .channelOption(ChannelOptions.socket(SocketOptionLevel(IPPROTO_TCP), TCP_NODELAY), value: 1)
         
         self.channel = try clientBootstrap.connect(host: self.ipAdress, port: self.port).wait()
         
-        let childChannel: Channel = try! channel!.pipeline.handler(type: NIOSSHHandler.self).flatMap { sshHandler in
-            let promise = self.channel!.eventLoop.makePromise(of: Channel.self)
-            sshHandler.createChannel(promise) { childChannel, channelType in
-                guard channelType == .session else {
-                    return self.channel!.eventLoop.makeFailedFuture(SSHClientError.invalidChannelType)
+        guard let channel = channel else {
+            throw SSHClientError.channelInitializationFailed
+        }
+
+        let childChannel: Channel = try channel.pipeline
+            .handler(type: NIOSSHHandler.self)
+            .flatMap { sshHandler in
+                let promise = channel.eventLoop.makePromise(of: Channel.self)
+                sshHandler.createChannel(promise) { childChannel, channelType in
+                    guard channelType == .session else {
+                        return channel.eventLoop.makeFailedFuture(SSHClientError.invalidChannelType)
+                    }
+                    return childChannel.pipeline.addHandlers([ExecutionHandler(), ErrorHandler()])
                 }
-                return childChannel.pipeline.addHandlers([ExecutionHandler(), ErrorHandler()])
+                return promise.futureResult
             }
-            return promise.futureResult
-        }.wait()
+            .wait()
         self.childChannel = childChannel
         try self.unwrappedChildChannel.triggerUserOutboundEvent(SSHChannelRequestEvent.ShellRequest(wantReply: false)).wait()
     }
@@ -89,15 +107,19 @@ public class SSHClient {
     /// - Parameter cmd: The command that is executed remotely
     /// - Parameter responseHandler: The call back function that is call with the result from the request.
     /// - Returns EventLoopFuture<Void>: The void eventloopfuture that is returned
+    @discardableResult
     public func execute(cmd: String, responseHandler: ((String) -> Void)?) throws -> EventLoopFuture<Void> {
         self.unwrappedChildChannel.triggerUserOutboundEvent((self.wrapIn(cmd), responseHandler))
     }
-    
+    /// Executes a command and returns the stdout as a String.
     public func execute(cmd: String) throws -> String {
         let promise = group.next().makePromise(of: String.self)
-        return try self.unwrappedChildChannel.triggerUserOutboundEvent((self.wrapIn(cmd), promise)).flatMap {
-            promise.futureResult
-        }.wait()
+        return try self.unwrappedChildChannel
+            .triggerUserOutboundEvent((self.wrapIn(cmd), promise))
+            .flatMap {
+                promise.futureResult
+            }
+            .wait()
     }
     
     /// Executes the given commands on the remote device.
@@ -111,7 +133,7 @@ public class SSHClient {
                     try self.execute(cmd: cmd, responseHandler: nil)
                 },
                 on: group.next(),
-                { _, _ in }
+                { _, _ in } // swiftlint:disable:this opening_brace
             )
     }
     
@@ -119,7 +141,7 @@ public class SSHClient {
     /// - Parameter cmd: The command that is executed remotely
     /// - Returns EventLoopFuture<Void>: The void eventloopfuture that is returned
     public func assertSuccessfulExecution(cmd: String, responseHandler: ((String) -> Void)? = nil) {
-        try! self.execute(cmd: cmd, responseHandler: responseHandler).wait()
+        try! self.execute(cmd: cmd, responseHandler: responseHandler).wait() // swiftlint:disable:this force_try
     }
     
     /// Closes all channels and eventloops.

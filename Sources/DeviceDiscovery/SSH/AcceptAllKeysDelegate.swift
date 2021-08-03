@@ -4,6 +4,8 @@
 //
 //  Created by Felix Desiderato on 08/07/2021.
 //
+// This code is based on the SwiftNIO SSH project: https://github.com/apple/swift-nio-ssh
+//
 
 import Foundation
 import NIO

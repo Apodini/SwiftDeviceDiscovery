@@ -33,10 +33,7 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
     /// The configuration storage that will be used for this device discovery.
     /// See `.defaultConfiguration` for the default values set.
     /// Add  `ConfigurationProperties` to account for custom configurations.
-    public var configuration: ConfigurationStorage = ConfigurationStorage.shared
-    /// When set, allows the user to perform custom actions on with user defined `ConfigurationOption`.
-    /// You can assume that most properties of `Device` have already been set and can be used.
-    public var onConfiguration: ((AnyDevice, ConfigurationStorage) -> Void)?
+    public var configuration = ConfigurationStorage.shared
 
     /// Initializes a `DeviceDiscovery` object
     /// - Parameter identifier: The `DeviceIdentifier` that should be searched for.
@@ -51,6 +48,7 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
         self.actions = []
     }
     
+    @discardableResult
     /// Runs the device discovery with the given timeout.
     /// - Parameter timeout: Specifies how it will wait until the post discovery actions are performed. Default is 30 seconds.
     /// - Returns [DiscoveryResult]: Returns a Array of `DiscoveryResult` containing the found information.
@@ -68,7 +66,7 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
     }
     
     
-    public func netServiceBrowser(_ browser: NetServiceBrowser, didNotSearch errorDict: [String : NSNumber]) {
+    public func netServiceBrowser(_ browser: NetServiceBrowser, didNotSearch errorDict: [String: NSNumber]) {
         print(errorDict)
     }
     
@@ -100,10 +98,6 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
     private func runPostDiscoveryActions() throws -> [DiscoveryResult] {
         var results: [DiscoveryResult] = []
         for device in self.devices {
-            logger.debug("Configure device: \(String(describing: device.hostname))")
-            // Run configure method for every device that is found.
-            onConfiguration?(device, self.configuration)
-            
             logger.notice("Performing post discovery actions for \(String(describing: device.hostname))")
             guard let runPostActions = self.configuration.typedValue(for: .runPostActions, to: Bool.self),
                   runPostActions else {
@@ -113,18 +107,17 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
             var performedActions: PerformedAction = [:]
             let sshClient = try sshClient(for: device)
             
-            for Action in actions {
-                logger.info("Running action \(Action.identifier)")
-                let act = Action.init()
+            for actionType in actions {
+                logger.info("Running action \(actionType.identifier)")
+                let act = actionType.init()
                 let foundDevices = try act.run(device, on: self.eventLoopGroup, client: sshClient).wait()
                 
-                logger.info("Found \(foundDevices) devices of type \(Action.identifier) for \(device.hostname)")
+                logger.info("Found \(foundDevices) devices of type \(actionType.identifier) for \(String(describing: device.hostname))")
                 
-                performedActions[Action.identifier] = foundDevices
+                performedActions[actionType.identifier] = foundDevices
             }
             results.append(DiscoveryResult(device: device, foundEndDevices: performedActions))
         }
         return results
     }
-    
 }
