@@ -11,7 +11,7 @@ let package = Package(
         .library(
             name: "SwiftDeviceDiscovery",
             targets: ["DeviceDiscovery"]),
-        .executable(name: "SwiftDeviceDiscoveryExecutable", targets: ["DeviceDiscoveryExecutable"])
+        .executable(name: "discovery-executable", targets: ["discovery-executable"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -33,7 +33,7 @@ let package = Package(
             ]
         ),
         .executableTarget(
-            name: "DeviceDiscoveryExecutable",
+            name: "discovery-executable",
             dependencies: [
                 .target(name: "DeviceDiscovery")
             ]
