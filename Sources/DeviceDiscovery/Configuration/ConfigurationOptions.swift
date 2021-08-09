@@ -10,9 +10,9 @@ import Network
 
 /// A `ConfigurationProperty` encapsulates a `String` value and is used as a key in a `Device` configuration property.
 public struct ConfigurationProperty: Hashable {
-    /// A default key specifying the username for a possible ssh injection.
+    /// A default key specifying the username for a possible ssh injection. If no value is set for this key, it defaults to an empty string.
     public static let username = ConfigurationProperty("key_username")
-    /// A default key specifying the password for a possible ssh injection.
+    /// A default key specifying the password for a possible ssh injection. If no value is set for this key, it defaults to an empty string.
     public static let password = ConfigurationProperty("key_password")
     /// A default key specifying if the `DeviceDiscovery` should perform post discovery actions on this device.
     public static let runPostActions = ConfigurationProperty("key_postActions")

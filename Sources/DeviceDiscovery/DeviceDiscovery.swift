@@ -81,18 +81,21 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
     public func netServiceBrowser(_ browser: NetServiceBrowser, didFind service: NetService, moreComing: Bool) {
         logger.info("Found service: \(service)")
         
-        let device = AnyDevice(service, identifier: self.identifier)
+        let device = AnyDevice(
+            service,
+            identifier: self.identifier,
+            username: configuration.typedValue(for: .username, to: String.self),
+            password: configuration.typedValue(for: .password, to: String.self)
+        )
         devices.append(device)
     }
     
     private func sshClient(for device: Device) throws -> SSHClient? {
-        guard let username = configuration.typedValue(for: .username, to: String.self),
-              let password = configuration.typedValue(for: .password, to: String.self),
-              let ipAddress = device.ipv4Address else {
+        guard let ipAddress = device.ipv4Address else {
             return nil
         }
 
-        return try SSHClient(username: username, password: password, ipAdress: ipAddress, autoBootstrap: false)
+        return try SSHClient(username: device.username, password: device.password, ipAdress: ipAddress, autoBootstrap: false)
     }
     
     private func runPostDiscoveryActions() throws -> [DiscoveryResult] {

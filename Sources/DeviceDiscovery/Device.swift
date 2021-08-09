@@ -42,8 +42,12 @@ public protocol Device: CustomStringConvertible {
     var ipv6Address: String? { get }
     /// The hostname of the service.
     var hostname: String? { get }
+    /// The password of the device
+    var password: String { get }
+    /// The username of the device
+    var username: String { get }
     /// Initializes a new device with the given `NetService` and `DeviceIdentifier`
-    init(_ service: NetService, identifier: DeviceIdentifier)
+    init(_ service: NetService, identifier: DeviceIdentifier, username: String?, password: String?)
 }
 
 public extension Device {
@@ -115,10 +119,19 @@ extension String {
 public struct AnyDevice: Device {
     public static var identifier: DeviceIdentifier = .emptyIdentifier
     
+    public var password: String
+    public var username: String
+    
     public var service: NetService
 
-    public init(_ service: NetService, identifier: DeviceIdentifier) {
+    public init(_ service: NetService,
+                identifier: DeviceIdentifier,
+                username: String?,
+                password: String?
+    ) {
         self.service = service
         Self.identifier = identifier
+        self.username = username ?? ""
+        self.password = password ?? ""
     }
 }
