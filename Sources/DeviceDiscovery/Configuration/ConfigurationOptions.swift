@@ -9,7 +9,7 @@ import Foundation
 import Network
 
 /// A `ConfigurationProperty` encapsulates a `String` value and is used as a key in a `Device` configuration property.
-public struct ConfigurationProperty: Hashable, Codable {
+public struct ConfigurationProperty: Hashable {
     /// A default key specifying the username for a possible ssh injection. If no value is set for this key, it defaults to an empty string.
     public static let username = ConfigurationProperty("key_username")
     /// A default key specifying the password for a possible ssh injection. If no value is set for this key, it defaults to an empty string.
@@ -78,7 +78,7 @@ public struct ConfigurationStorage: ExpressibleByDictionaryLiteral {
 
 /// A property wrapper of a configuration  that allows access to any configuration value from PostActions.
 @propertyWrapper
-public struct Configuration<Value: Codable>: Codable {
+public struct Configuration<Value> {
     /// The wrapped value of the Configuration
     public var wrappedValue: Value {
         if let value = ConfigurationStorage.shared.typedValue(for: key, to: Value.self) {

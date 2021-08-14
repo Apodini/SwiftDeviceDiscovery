@@ -30,7 +30,7 @@ extension ActionIdentifier: CustomStringConvertible {
 
 /// A protocol that can be implemented to specify a `PostDiscoveryAction`. These will be executed after the discovery phase and
 /// allow to for custom actions on the found device. Typically it is used to search for end devices that are connected to the found device.
-public protocol PostDiscoveryAction: Codable {
+public protocol PostDiscoveryAction {
     /// The identifier object of a `PostDiscoveryAction`.
     static var identifier: ActionIdentifier { get }
     /// Default empty initializer.
