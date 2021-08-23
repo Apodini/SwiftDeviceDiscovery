@@ -25,6 +25,11 @@ final class ExecutionHandler: ChannelDuplexHandler {
     
     private var responsePromise: EventLoopPromise<String>?
     
+    private var completionPromise: EventLoopPromise<Void>?
+    private var nonThrowingCompletionPromise: EventLoopPromise<Bool>?
+    
+    private var completeOutput: String = ""
+    
     init() {}
     
     private func handleResponse(_ response: String) {
@@ -32,13 +37,22 @@ final class ExecutionHandler: ChannelDuplexHandler {
             return
         }
         
-        if let responseH = self.responseHandler {
-            responseH(response)
-        } else if self.responsePromise != nil {
-            responsePromise?.succeed(response)
+        completeOutput.append(contentsOf: response)
+        
+        if self.responseHandler != nil {
+            self.responseHandler?(response)
         } else {
             print(response)
         }
+        
+        if response.contains(SSHClient.successCode) {
+            nonThrowingCompletionPromise?.succeed(true)
+            completionPromise?.succeed(())
+        } else if response.contains(SSHClient.failureCode) {
+            nonThrowingCompletionPromise?.succeed(false)
+            completionPromise?.fail(SSHClientError.executionFailed)
+        }
+        
         //invalidate responsehandler afterwards, as responseHandler is request specific
         self.responseHandler = nil
     }
@@ -61,7 +75,6 @@ final class ExecutionHandler: ChannelDuplexHandler {
     }
     
     func userInboundEventTriggered(context: ChannelHandlerContext, event: Any) {
-        print(event)
         context.fireUserInboundEventTriggered(event)
     }
     
@@ -70,13 +83,16 @@ final class ExecutionHandler: ChannelDuplexHandler {
         case let event as SSHChannelRequestEvent.ShellRequest:
             context.triggerUserOutboundEvent(event, promise: promise)
         case let event as (ByteBuffer, ((String) -> Void)?):
+            self.completionPromise = promise
             self.responseHandler = event.1
-            self.write(context: context, data: self.wrapInboundOut(event.0), promise: promise)
-        case let event as (ByteBuffer, EventLoopPromise<String>):
-            self.responsePromise = event.1
-            self.write(context: context, data: self.wrapInboundOut(event.0), promise: promise)
+            self.write(context: context, data: self.wrapInboundOut(event.0), promise: nil)
+        case let event as (ByteBuffer, ((String) -> Void)?, EventLoopPromise<Bool>):
+            self.responseHandler = event.1
+            self.nonThrowingCompletionPromise = event.2
+            self.write(context: context, data: self.wrapInboundOut(event.0), promise: nil)
         case let event as ByteBuffer:
-            self.write(context: context, data: self.wrapInboundOut(event), promise: promise)
+            self.completionPromise = promise
+            self.write(context: context, data: self.wrapInboundOut(event), promise: nil)
         default:
             context.triggerUserOutboundEvent(event, promise: promise)
         }

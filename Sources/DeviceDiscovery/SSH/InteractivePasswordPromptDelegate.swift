@@ -40,4 +40,5 @@ public enum SSHClientError: Swift.Error {
     case passwordAuthenticationNotSupported
     case invalidChannelType
     case channelInitializationFailed
+    case executionFailed
 }

@@ -27,6 +27,9 @@ public class SSHClient {
     private var channel: Channel?
     private var childChannel: Channel?
     
+    static var successCode: String = "_cmd_exit_success_0_"
+    static var failureCode: String = "_cmd_exit_failure_1_"
+    
     private var unwrappedChildChannel: Channel {
         childChannel.unsafelyUnwrapped
     }
@@ -53,6 +56,8 @@ public class SSHClient {
     }
     
     deinit {
+        // swiftlint:disable:next force_try
+        try! childChannel?.close().wait()
         // swiftlint:disable:next force_try
         try! channel?.close().wait()
         // swiftlint:disable:next force_try
@@ -100,26 +105,38 @@ public class SSHClient {
     }
     
     private func wrapIn(_ value: String) -> ByteBuffer {
-        ByteBuffer(string: value.appending("\n"))
+        let wrapper = String(format: "%@ && echo %@ || %@\n", value, Self.successCode, Self.failureCode)
+        return ByteBuffer(string: wrapper)
+    }
+    
+    /// Executes the given command synchronously and asserts its successful execution by throwing an `SSHError` if the execution failed.
+    /// By default, all output is directly printed to stdout.
+    /// - Parameter cmd: The execution command
+    /// - Parameter responseHandler: A callback function that is called for every chunk of output.
+    public func executeWithAssertion(cmd: String, responseHandler: ((String) -> Void)? = nil) {
+        let promise = group.next().makePromise(of: Void.self)
+        self.unwrappedChildChannel.triggerUserOutboundEvent((self.wrapIn(cmd), responseHandler), promise: promise)
+        // swiftlint:disable:next force_try
+        try! promise.futureResult.wait()
+    }
+    
+    /// Executes the given command synchronously and returns `true` on a successful execution.
+    /// By default, all output is directly printed to stdout.
+    /// - Parameter cmd: The execution command
+    /// - Parameter responseHandler: A callback function that is called for every chunk of output.
+    @discardableResult
+    public func execute(cmd: String, responseHandler: ((String) -> Void)? = nil) throws -> Bool {
+        let promise = group.next().makePromise(of: Bool.self)
+        self.unwrappedChildChannel.triggerUserOutboundEvent(((self.wrapIn(cmd), responseHandler, promise)), promise: nil)
+        return try promise.futureResult.wait()
     }
     
     /// Executes a command on the remote device and calls the given responseHandler call-back with the result
     /// - Parameter cmd: The command that is executed remotely
     /// - Parameter responseHandler: The call back function that is call with the result from the request.
     /// - Returns EventLoopFuture<Void>: The void eventloopfuture that is returned
-    @discardableResult
     public func execute(cmd: String, responseHandler: ((String) -> Void)?) throws -> EventLoopFuture<Void> {
         self.unwrappedChildChannel.triggerUserOutboundEvent((self.wrapIn(cmd), responseHandler))
-    }
-    /// Executes a command and returns the stdout as a String.
-    public func execute(cmd: String) throws -> String {
-        let promise = group.next().makePromise(of: String.self)
-        return try self.unwrappedChildChannel
-            .triggerUserOutboundEvent((self.wrapIn(cmd), promise))
-            .flatMap {
-                promise.futureResult
-            }
-            .wait()
     }
     
     /// Executes the given commands on the remote device.
@@ -135,13 +152,6 @@ public class SSHClient {
                 on: group.next(),
                 { _, _ in } // swiftlint:disable:this opening_brace
             )
-    }
-    
-    /// Executes a command that asserts successful execution.
-    /// - Parameter cmd: The command that is executed remotely
-    /// - Returns EventLoopFuture<Void>: The void eventloopfuture that is returned
-    public func assertSuccessfulExecution(cmd: String, responseHandler: ((String) -> Void)? = nil) {
-        try! self.execute(cmd: cmd, responseHandler: responseHandler).wait() // swiftlint:disable:this force_try
     }
     
     /// Closes all channels and eventloops.

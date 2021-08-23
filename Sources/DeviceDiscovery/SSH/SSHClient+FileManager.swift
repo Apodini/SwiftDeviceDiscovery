@@ -44,8 +44,7 @@ public extension SSHClient {
         }
 
         private func dirExists(on path: URL) throws -> Bool {
-            let result = try client.execute(cmd: "if test -d \(path.path); then echo exists; else echo notExist; fi")
-            return result == "exists\n"
+            try client.execute(cmd: "cd \(path.path)")
         }
 
         /// Creates a directory at the given `URL` with the given permissions
@@ -55,7 +54,7 @@ public extension SSHClient {
             if try dirExists(on: path) {
                 self.remove(at: path, isDir: true)
             }
-            try client.execute(cmd: command("mkdir -m \(permissions) \(path.path)"), responseHandler: nil).wait()
+            client.executeWithAssertion(cmd: command("mkdir -m \(permissions) \(path.path)"), responseHandler: nil)
             print("Directory at \(path.path) created.")
         }
         
@@ -63,8 +62,8 @@ public extension SSHClient {
         /// - Parameter origin: The url containing the directory that will be moved
         /// - Parameter destination: The url the directory that will be moved to
         /// - Returns EventLoopFuture<Void>: Return type
-        public func move(from origin: URL, to destination: URL) throws {
-            try client.execute(cmd: command("mv \(origin.path) \(destination.path)"), responseHandler: nil).wait()
+        public func move(from origin: URL, to destination: URL) {
+            client.executeWithAssertion(cmd: command("mv \(origin.path) \(destination.path)"), responseHandler: nil)
             print("Moved \(origin.lastPathComponent) from \(origin.path) to \(destination.path)")
         }
         
@@ -78,7 +77,7 @@ public extension SSHClient {
                 .appending(isDir ? "d" : "")
                 .appending(recursive ? "r" : "")
                 .appending(force ? "f" : "")
-            client.assertSuccessfulExecution(cmd: command("rm -\(options) \(path.path)"))
+            client.executeWithAssertion(cmd: command("rm -\(options) \(path.path)"))
             print("Removed \(path.path)")
         }
     }
