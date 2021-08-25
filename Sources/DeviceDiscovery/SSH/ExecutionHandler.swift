@@ -19,7 +19,7 @@ final class ExecutionHandler: ChannelDuplexHandler {
     typealias OutboundIn = ByteBuffer
     typealias OutboundOut = SSHChannelData
     
-    private let initialShellResponse: String = "Debian GNU/Linux system"
+    private let initialShellResponse: String = "GNU/Linux"
     
     private var responseHandler: ((String) -> Void)?
     
