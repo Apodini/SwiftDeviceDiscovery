@@ -7,7 +7,6 @@
 
 import Foundation
 import NIO
-import NIOLIFX
 
 /// An identifier object that is used to identify a `PostDiscoveryAction`
 public struct ActionIdentifier: RawRepresentable, Hashable, Equatable, Codable {

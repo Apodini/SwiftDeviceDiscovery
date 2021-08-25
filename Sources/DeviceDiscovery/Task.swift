@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import NIOLIFX
 
 /// A convenient class that encapsulates a `Process` and
 /// bundles often used functionality for `PostDiscoveryAction`s.

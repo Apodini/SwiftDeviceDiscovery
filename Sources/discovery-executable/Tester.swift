@@ -16,8 +16,8 @@ enum Tester {
         //Do something
         let discovery = DeviceDiscovery(DeviceIdentifier("_workstation._tcp."))
         discovery.configuration = [
-            .username: "pi",
-            .password: "rasp",
+            .username: "ubuntu",
+            .password: "test1234",
             .runPostActions: true
         ]
         try discovery.run(1)

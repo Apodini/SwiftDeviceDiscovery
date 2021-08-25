@@ -8,7 +8,6 @@
 import Foundation
 import Network
 import Logging
-import NIOLIFX
 import NIO
 
 /// Responsible for running a discovery in the given domain for the specified `Device.Type`.
