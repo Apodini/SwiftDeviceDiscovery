@@ -52,7 +52,7 @@ public extension SSHClient {
         /// - Parameter permissions: The posix permissions that should be set for the directory
         /// - Parameter force: Flag indicating if an existing directory should be overridden by force
         public func createDir(on path: URL, permissions: Int, force: Bool = false) throws {
-            if try dirExists(on: path) && force {
+            if try dirExists(on: path) {
                 if force {
                     self.remove(at: path, isDir: true)
                 } else {
