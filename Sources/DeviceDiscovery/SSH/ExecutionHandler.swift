@@ -28,21 +28,11 @@ final class ExecutionHandler: ChannelDuplexHandler {
     private var completionPromise: EventLoopPromise<Void>?
     private var nonThrowingCompletionPromise: EventLoopPromise<Bool>?
     
-    private var completeOutput: String = ""
-    
     init() {}
     
     private func handleResponse(_ response: String) {
         guard !response.contains(initialShellResponse) else {
             return
-        }
-        
-        completeOutput.append(contentsOf: response)
-        
-        if self.responseHandler != nil {
-            self.responseHandler?(response)
-        } else {
-            print(response)
         }
         
         if response.contains(SSHClient.successCode) {
@@ -51,6 +41,14 @@ final class ExecutionHandler: ChannelDuplexHandler {
         } else if response.contains(SSHClient.failureCode) {
             nonThrowingCompletionPromise?.succeed(false)
             completionPromise?.fail(SSHClientError.executionFailed)
+        }
+        let output = response
+            .replacingOccurrences(of: [SSHClient.failureCode, SSHClient.successCode], with: "")
+            .trimmingCharacters(in: .newlines)
+        if self.responseHandler != nil {
+            self.responseHandler?(output)
+        } else {
+            print(output)
         }
         
         //invalidate responsehandler afterwards, as responseHandler is request specific

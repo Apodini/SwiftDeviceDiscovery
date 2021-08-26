@@ -56,11 +56,8 @@ public class SSHClient {
     }
     
     deinit {
-        // swiftlint:disable:next force_try
         try? childChannel?.close().wait()
-        // swiftlint:disable:next force_try
         try? channel?.close().wait()
-        // swiftlint:disable:next force_try
         try? group.syncShutdownGracefully()
     }
     

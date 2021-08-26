@@ -50,9 +50,15 @@ public extension SSHClient {
         /// Creates a directory at the given `URL` with the given permissions
         /// - Parameter path: The url containing the directory that will be created
         /// - Parameter permissions: The posix permissions that should be set for the directory
-        public func createDir(on path: URL, permissions: Int) throws {
-            if try dirExists(on: path) {
-                self.remove(at: path, isDir: true)
+        /// - Parameter force: Flag indicating if an existing directory should be overridden by force
+        public func createDir(on path: URL, permissions: Int, force: Bool = false) throws {
+            if try dirExists(on: path) && force {
+                if force {
+                    self.remove(at: path, isDir: true)
+                } else {
+                    print("Directory already exists and force was set to false")
+                    return
+                }
             }
             client.executeWithAssertion(cmd: command("mkdir -m \(permissions) \(path.path)"), responseHandler: nil)
             print("Directory at \(path.path) created.")
