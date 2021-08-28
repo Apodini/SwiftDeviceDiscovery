@@ -33,7 +33,7 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
     /// See `.defaultConfiguration` for the default values set.
     /// Add  `ConfigurationProperties` to account for custom configurations.
     public var configuration = ConfigurationStorage.shared
-
+    
     /// Initializes a `DeviceDiscovery` object
     /// - Parameter identifier: The `DeviceIdentifier` that should be searched for.
     /// - Parameter domain: The `Domain` in which the `DeviceDiscovery` will be looking for.
@@ -59,7 +59,7 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
         RunLoop.current.run(until: now.addingTimeInterval(timeout))
         logger.notice("Finished device search.")
         let results = try runPostDiscoveryActions()
-    
+        
         logger.notice("Finished post discovery actions.")
         return eventLoopGroup.next().makeSucceededFuture(results)
     }
@@ -93,7 +93,7 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
         guard let ipAddress = device.ipv4Address else {
             return nil
         }
-
+        
         return try SSHClient(username: device.username, password: device.password, ipAdress: ipAddress, autoBootstrap: false)
     }
     
@@ -103,9 +103,10 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
             logger.notice("Performing post discovery actions for \(String(describing: device.hostname))")
             guard let runPostActions = self.configuration.typedValue(for: .runPostActions, to: Bool.self),
                   runPostActions else {
-                logger.notice("No post found actions configured for \(String(describing: device.hostname))")
-                return []
-            }
+                      logger.notice("No post found actions configured for \(String(describing: device.hostname))")
+                      results.append(DiscoveryResult(device: device, foundEndDevices: [:]))
+                      continue
+                  }
             var performedActions: PerformedAction = [:]
             let sshClient = try sshClient(for: device)
             
