@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import CFNetwork
 import Logging
 import NIO
 
