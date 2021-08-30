@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Network
 
 /// A `ConfigurationProperty` encapsulates a `String` value and is used as a key in a `Device` configuration property.
 public struct ConfigurationProperty: Hashable {
