@@ -6,7 +6,6 @@
 //
 import Foundation
 import NIO
-import Network
 
 /// An identifier object that is used to identify a `Device` object. When set for a `Device`, make sure it matches the type of the published service
 /// you are looking for in the network. For example: When looking for raspberry pis, that are using avahi to publish their service, set the identifier of a
