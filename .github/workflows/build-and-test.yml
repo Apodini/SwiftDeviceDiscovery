@@ -94,6 +94,8 @@ jobs:
     - name: Install libsqlite3
       if: startsWith( matrix.linux, 'centos' )
       run: yum update -y --nobest && yum install -y sqlite-devel
+    - name: Install avahi
+      run: apt-get update && apt-get install -y --no-install-recommends libavahi-compat-libdnssd-dev
     - uses: actions/cache@v2
       with:
         path: .build
