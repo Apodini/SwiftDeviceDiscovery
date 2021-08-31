@@ -40,8 +40,6 @@ public protocol Device: CustomStringConvertible {
     var macAddress: Int64? { get }
     /// An `String` representation of the ipv4 address of the service.
     var ipv4Address: String? { get }
-    /// An `String` representation of the ipv6 address of the service.
-    var ipv6Address: String? { get }
     /// The hostname of the service.
     var hostname: String? { get }
     /// The password of the device
@@ -67,18 +65,15 @@ public extension Device {
     }
     /// An `String` representation of the ipv4 address of the service.
     var ipv4Address: String? {
-        guard let hostname = self.hostname else {
-            return nil
-        }
-        return IPAddressResolver(hostname).ipv4Address
+        IPAddressResolver.resolveIPAdress(self.hostname, domain: service.domain)
     }
-    /// An `String` representation of the ipv6 address of the service.
-    var ipv6Address: String? {
-        guard let hostname = self.hostname else {
-            return nil
-        }
-        return IPAddressResolver(hostname).ipv6Address
-    }
+//    /// An `String` representation of the ipv6 address of the service.
+//    var ipv6Address: String? {
+//        guard let hostname = self.hostname else {
+//            return nil
+//        }
+//        return IPAddressResolver(hostname).ipv6Address
+//    }
     /// The hostname of the service.
     var hostname: String? {
         service.hostname()
@@ -119,6 +114,7 @@ extension String {
 
 /// A type agnostic implementation of `Device` that is used in `DeviceDiscovery`
 public struct AnyDevice: Device {
+
     public static var identifier: DeviceIdentifier = .emptyIdentifier
     
     public var password: String
