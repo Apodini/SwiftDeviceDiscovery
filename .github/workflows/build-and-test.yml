@@ -85,17 +85,15 @@ jobs:
         configuration: [debug, release, release_testing]
     steps:
     - uses: actions/checkout@v2
-    - name: Install libsqlite3, lsof and zsh
+    - name: Install libsqlite3, lsof, zsh and libavahi-compat-libdnssd-dev
       if: ${{ !(startsWith( matrix.linux, 'centos' ) || startsWith( matrix.linux, 'amazonlinux' )) }}
-      run: apt-get update && apt-get install -y --no-install-recommends libsqlite3-dev lsof zsh
+      run: apt-get update && apt-get install -y --no-install-recommends libsqlite3-dev lsof zsh libavahi-compat-libdnssd-dev
     - name: Install libsqlite3
       if: startsWith( matrix.linux, 'amazonlinux' )
-      run: yum update -y && yum install -y sqlite-devel
+      run: yum update -y && yum install -y sqlite-devel libavahi-compat-libdnssd-dev
     - name: Install libsqlite3
       if: startsWith( matrix.linux, 'centos' )
-      run: yum update -y --nobest && yum install -y sqlite-devel
-    - name: Install avahi
-      run: apt-get update && apt-get install -y --no-install-recommends libavahi-compat-libdnssd-dev
+      run: yum update -y --nobest && yum install -y sqlite-devel libavahi-compat-libdnssd-dev
     - uses: actions/cache@v2
       with:
         path: .build
