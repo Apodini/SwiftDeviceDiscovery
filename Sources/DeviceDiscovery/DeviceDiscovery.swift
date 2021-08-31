@@ -5,8 +5,7 @@
 //  Created by Felix Desiderato on 08/07/2021.
 //
 
-import Foundation.NSObject
-import Foundation.NSDate
+import Foundation
 import Logging
 import NIO
 #if os(Linux)
