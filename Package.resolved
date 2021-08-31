@@ -2,6 +2,15 @@
   "object": {
     "pins": [
       {
+        "package": "NetService",
+        "repositoryURL": "https://github.com/Bouke/NetService.git",
+        "state": {
+          "branch": null,
+          "revision": "08e1f7663fd4b09b9f4ad165be89704c7cd2e3f8",
+          "version": "0.8.1"
+        }
+      },
+      {
         "package": "swift-argument-parser",
         "repositoryURL": "https://github.com/apple/swift-argument-parser",
         "state": {

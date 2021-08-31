@@ -8,6 +8,9 @@
 import Foundation
 import Logging
 import NIO
+#if os(Linux)
+import NetService
+#endif
 
 /// Responsible for running a discovery in the given domain for the specified `Device.Type`.
 /// The discovery can be configured using the `configuration` property of the device object.
