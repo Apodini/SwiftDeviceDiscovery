@@ -93,7 +93,10 @@ jobs:
       run: yum update -y && yum install -y sqlite-devel avahi avahi-compat-libdns_sd avahi-compat-libdns_sd-devel
     - name: Install libsqlite3
       if: startsWith( matrix.linux, 'centos' )
-      run: yum update -y --nobest && yum install -y sqlite-devel avahi-devel
+      run: yum update -y --nobest && yum install -y sqlite-devel
+    - name: Install avahi
+      if: startsWith( matrix.linux, 'centos' )
+      run: dnf update -y && dnf --enablerepo=powertools -y install avahi-compat-libdns_sd avahi-compat-libdns_sd-devel
     - uses: actions/cache@v2
       with:
         path: .build
