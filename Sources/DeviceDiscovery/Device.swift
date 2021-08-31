@@ -114,7 +114,6 @@ extension String {
 
 /// A type agnostic implementation of `Device` that is used in `DeviceDiscovery`
 public struct AnyDevice: Device {
-
     public static var identifier: DeviceIdentifier = .emptyIdentifier
     
     public var password: String
@@ -122,10 +121,11 @@ public struct AnyDevice: Device {
     
     public var service: NetService
 
-    public init(_ service: NetService,
-                identifier: DeviceIdentifier,
-                username: String?,
-                password: String?
+    public init(
+        _ service: NetService,
+        identifier: DeviceIdentifier,
+        username: String?,
+        password: String?
     ) {
         self.service = service
         Self.identifier = identifier
