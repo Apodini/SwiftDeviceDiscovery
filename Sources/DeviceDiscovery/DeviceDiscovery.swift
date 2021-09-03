@@ -125,4 +125,9 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
         }
         return results
     }
+    
+    /// Stops any running search. If you want to run multiple searchs, make sure to run `stop` after each.
+    public func stop() {
+        browser.stop()
+    }
 }
