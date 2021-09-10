@@ -49,8 +49,6 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
     /// The default action is `LIFXDeviceDiscoveryAction`
     private var actions: [PostActionType]
     
-    public var actionImageUrls: [URL]
-    
     /// The configuration storage that will be used for this device discovery.
     /// See `.defaultConfiguration` for the default values set.
     /// Add  `ConfigurationProperties` to account for custom configurations.
@@ -67,7 +65,6 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
         
         // Default actions
         self.actions = []
-        self.actionImageUrls = []
     }
     
     @discardableResult
@@ -90,6 +87,12 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
     /// Register multiple `PostActionType`s that will be performed on found devices.
     /// - Parameter types: One or multiple `PostActionType`
     public func registerActions(_ types: PostActionType...) {
+        self.actions.append(contentsOf: types)
+    }
+    
+    /// Register an array of `PostActionType`s that will be performed on found devices.
+    /// - Parameter types: An array of `PostActionType`.
+    public func registerActions(_ types: [PostActionType]) {
         self.actions.append(contentsOf: types)
     }
     
@@ -168,6 +171,7 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
         
         try sshClient?.bootstrap()
         try sshClient?.execute(cmd: "sudo docker login -u \(credentials.0) -p \(credentials.1)")
+        try sshClient?.execute(cmd: "sudo chmod 777 \(dockerAction.fileUrl.path)")
         
         let command: String = {
             let cmd: String = "sudo docker run --rm "
