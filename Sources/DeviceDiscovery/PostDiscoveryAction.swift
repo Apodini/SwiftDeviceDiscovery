@@ -107,6 +107,8 @@ public enum DiscoveryDockerOptions {
     case command(String)
     /// Needs to be set to log in into the docker repo of the image
     case credentials(username: String, password: String)
+    /// Connects to the container to the specified network
+    case  network(String)
     /// Any custom options. Provide them in the common known string format.
     case custom(String)
     
@@ -122,6 +124,8 @@ public enum DiscoveryDockerOptions {
             return "-p \(hostPort):\(containerPort)"
         case .custom(let options):
             return options
+        case .network(let host):
+            return "--network=\(host)"
         case .command(_), .credentials(_, _):
             return ""
         }
