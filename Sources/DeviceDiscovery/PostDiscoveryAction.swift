@@ -57,3 +57,103 @@ extension DiscoveryResult: Equatable {
         lhs.foundEndDevices == rhs.foundEndDevices
     }
 }
+
+/// Encapusaltes a post discovery action for a docker image. An instance of this object can be passed to
+/// `registerActions` of `DeviceDiscovery` to be executed on the remote device. In contrary to a `PostDiscoveryAction`,
+/// the docker image of a `DockerDiscoveryAction` can assume it already on the device.
+///
+/// **NOTE**
+/// The provided docker image need to write the __number__ (as an integer) of results found to the file specified by `fileUrl`.
+/// Otherwise the discovery will not be able to execute the action correctly.  It is also recommend to use to the `volume` option
+public struct DockerDiscoveryAction {
+    /// An identifier for the docker action
+    public let identifier: ActionIdentifier
+    /// The name of the docker image
+    public let imageName: String
+    /// The file url to which the results file is saved
+    public let fileUrl: URL
+    /// The options that will be used when the image is run in a container
+    public let options: [DiscoveryDockerOptions]
+    
+    /// Initializes a new DockerDiscoveryAction.
+    ///  - Parameter identifier: An `ActionIdentifier` of the action.
+    ///  - Parameter imageName: The name of the docker image.
+    ///  - Parameter fileUrl: The url of the file that has been written by the docker container.
+    ///  - Parameter options: An array of option that are passed when the image is run in a container.
+    public init(
+        identifier: ActionIdentifier,
+        imageName: String,
+        fileUrl: URL,
+        options: [DiscoveryDockerOptions] = []
+    ) {
+        self.identifier = identifier
+        self.imageName = imageName
+        self.fileUrl = fileUrl
+        self.options = options
+    }
+    
+}
+
+/// Provides common used option when running a docker image in a container.
+public enum DiscoveryDockerOptions {
+    /// -d: Run the container in detached mode
+    case detached
+    /// --privileged: Runs the container with privileges
+    case privileged
+    /// -v hostDir:containerDir. Mounts the container to the given volume.
+    case volume(hostDir: String, containerDir: String)
+    /// --p hostPort:containerPort. Forwards the port in the container to the port on the host.
+    case port(hostPort: Int, containerPort: Int)
+    /// The command that will be executed when the container is started
+    case command(String)
+    /// Needs to be set to log in into the docker repo of the image
+    case credentials(username: String, password: String)
+    /// Any custom options. Provide them in the common known string format.
+    case custom(String)
+    
+    var argument: String {
+        switch self {
+        case .detached:
+            return "-d"
+        case .privileged:
+            return "--privileged"
+        case .volume(let hostDir, let containerDir):
+            return "-v \(hostDir):\(containerDir):Z"
+        case .port(let hostPort, let containerPort):
+            return "-p \(hostPort):\(containerPort)"
+        case .custom(let options):
+            return options
+        case .command(_), .credentials(username: _, password: _):
+            return ""
+        }
+    }
+    
+    var command: String {
+        switch self {
+        case .command(let cmd):
+            return cmd
+        default:
+            return ""
+        }
+    }
+}
+
+extension Array where Element == DiscoveryDockerOptions {
+    func containsVolume() -> Bool {
+        contains(where: { option in
+            if case .volume(_,_) = option {
+                return true
+            }
+            return false
+        })
+    }
+    
+    func getLoginCredentials() -> (String, String)? {
+        for option in self {
+            if case let .credentials(username: username, password: password) = option {
+                return (username, password)
+            }
+        }
+        return nil
+    }
+}

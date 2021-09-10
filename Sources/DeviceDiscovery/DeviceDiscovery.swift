@@ -15,6 +15,25 @@ import NetService
 /// Responsible for running a discovery in the given domain for the specified `Device.Type`.
 /// The discovery can be configured using the `configuration` property of the device object.
 public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDelegate {
+    
+    /// Defines the type of the post discovery action that will be performed on the found device.
+    public enum PostActionType {
+        /// Use to pass a `PostDiscoveryAction` object that has been implemented in Swift.
+        case action(PostDiscoveryAction.Type)
+        /// Use to pass a `DockerDiscoveryAction`, which defines an input from a docker image.
+        /// This image does not have to be written in Swift.
+        case docker(DockerDiscoveryAction)
+        
+        var identifier: ActionIdentifier {
+            switch self {
+            case .action(let PostAction):
+                return PostAction.identifier
+            case .docker(let dockerAction):
+                return dockerAction.identifier
+            }
+        }
+    }
+    
     /// A public typealias for the results of the performed post discvoery actions
     typealias PerformedAction = [ActionIdentifier: Int]
     
@@ -29,7 +48,9 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
     
     /// The `PostDiscoveryAction`s that will be performed on found devices.
     /// The default action is `LIFXDeviceDiscoveryAction`
-    public var actions: [PostDiscoveryAction.Type]
+    private var actions: [PostActionType]
+    
+    public var actionImageUrls: [URL]
     
     /// The configuration storage that will be used for this device discovery.
     /// See `.defaultConfiguration` for the default values set.
@@ -47,6 +68,7 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
         
         // Default actions
         self.actions = []
+        self.actionImageUrls = []
     }
     
     @discardableResult
@@ -66,6 +88,11 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
         return eventLoopGroup.next().makeSucceededFuture(results)
     }
     
+    /// Register multiple `PostActionType`s that will be performed on found devices.
+    /// - Parameter types: One or multiple `PostActionType`
+    public func registerActions(_ types: PostActionType...) {
+        self.actions.append(contentsOf: types)
+    }
     
     public func netServiceBrowser(_ browser: NetServiceBrowser, didNotSearch errorDict: [String: NSNumber]) {
         logger.error("\(errorDict)")
@@ -114,8 +141,15 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
             
             for actionType in actions {
                 logger.info("Running action \(actionType.identifier)")
-                let act = actionType.init()
-                let foundDevices = try act.run(device, on: self.eventLoopGroup, client: sshClient).wait()
+                
+                var foundDevices: Int
+                switch actionType {
+                case .action(let postDiscoveryAction):
+                    let act = postDiscoveryAction.init()
+                    foundDevices = try act.run(device, on: self.eventLoopGroup, client: sshClient).wait()
+                case .docker(let dockerDiscoveryAction):
+                    foundDevices = try runDockerImage(dockerDiscoveryAction, sshClient: sshClient)
+                }
                 
                 logger.info("Found \(foundDevices) devices of type \(actionType.identifier) for \(String(describing: device.hostname))")
                 
@@ -124,6 +158,36 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
             results.append(DiscoveryResult(device: device, foundEndDevices: performedActions))
         }
         return results
+    }
+    
+    private func runDockerImage(_ dockerAction: DockerDiscoveryAction, sshClient: SSHClient?) throws -> Int {
+        precondition(dockerAction.options.containsVolume(), "The provided options don't contain the volume")
+        
+        guard let credentials = dockerAction.options.getLoginCredentials() else {
+            throw DiscoveryError("Unable to find credetials in the given actions.")
+        }
+        
+        try sshClient?.bootstrap()
+        try sshClient?.execute(cmd: "sudo docker login -u \(credentials.0) -p \(credentials.1)")
+        
+        let command: String = {
+            let cmd: String = "sudo docker run --rm "
+            let args = dockerAction.options.map { $0.argument }.joined(separator: " ")
+            return cmd
+                .appending(args)
+                .appending(" \(dockerAction.imageName)")
+                .appending(" \(dockerAction.options.map { $0.command }.joined(separator: " "))")
+        }()
+        
+        try sshClient?.execute(cmd: command)
+        
+        var responseString = ""
+        sshClient?.executeWithAssertion(cmd: "cat \(dockerAction.fileUrl.path)", responseHandler: { response in
+            responseString = response
+        })
+        // swiftlint:disable:next force_unwrapping
+        let responseData = responseString.data(using: .utf8)!
+        return try JSONDecoder().decode(Int.self, from: responseData)
     }
     
     /// Stops any running search. If you want to run multiple searchs, make sure to run `stop` after each.
