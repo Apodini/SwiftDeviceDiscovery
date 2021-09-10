@@ -1,9 +1,11 @@
 # SwiftDeviceDiscovery
 
-This repository contains a library that allows the discovery of devices in the local network via mDNS and is able to grant access to the device by providing a ssh connect.
+[![Build and Test](https://github.com/Apodini/SwiftDeviceDiscovery/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/Apodini/SwiftDeviceDiscovery/actions/workflows/build-and-test.yml)
+
+This repository contains __SwiftDeviceDiscovery__, a highly customizable and easy to use library that allows the discovery of devices in the local network using Apple's mDNS discovery protocol Bonjour. It is able to grant access to and run custom defined actions on the remote device.
 
 ## Usage
-SwiftDeviceDiscovery can be used to detect devices of certain type in the local network. The setup is easy to use and can be setup quickly:
+SwiftDeviceDiscovery can be used to detect devices of certain type in the local network. The discovery is easy to use and can be setup quickly:
 ```
 let discovery = DeviceDiscovery(DeviceIdentifier("_workstation._tcp."))
 discovery.configuration = [
@@ -41,7 +43,7 @@ public struct DockerDiscoveryAction {
 
  When using a docker image, you have to follow certain design constrains:
 - The result of the docker image has to be a file containing an integer that represents the number of found devices. This has to be done to ensure some sort of unified API. Returning anything other will result in an error.
-- The result file has to be written to the specified fileUrl. 
+- The result file has to be written to the specified `fileUrl`. 
 
 You can pass options to a `DockerDiscoveryAction` to customize the run command of the image, e.g. by setting a volume. When your image is on a private repo, it is also expected to provide a `.credentials` option to be able to login into docker. In contrary to the `PostDiscoveryAction`, using a docker image does not constrain you to the swift language. As long as the image meets the afore-mentioned requirements, you can use it with the discovery. 
 
@@ -72,3 +74,6 @@ try discovery.run(1)
 ```
 
 After an successful search the discovery returns an array of `DiscoveryResult`s. These contain the device and the number of found sub devices for each post discovery action that was specified.
+
+## Contributing
+Contributions to this project are welcome. Please make sure to read the [contribution guidelines](https://github.com/Apodini/.github/blob/main/CONTRIBUTING.md) and the [contributor covenant code of conduct](https://github.com/Apodini/.github/blob/main/CODE_OF_CONDUCT.md) first.
