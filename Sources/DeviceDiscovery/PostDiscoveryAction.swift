@@ -91,7 +91,6 @@ public struct DockerDiscoveryAction {
         self.fileUrl = fileUrl
         self.options = options
     }
-    
 }
 
 /// Provides common used option when running a docker image in a container.
@@ -117,13 +116,13 @@ public enum DiscoveryDockerOptions {
             return "-d"
         case .privileged:
             return "--privileged"
-        case .volume(let hostDir, let containerDir):
+        case let .volume(hostDir, containerDir):
             return "-v \(hostDir):\(containerDir):Z"
-        case .port(let hostPort, let containerPort):
+        case let .port(hostPort, containerPort):
             return "-p \(hostPort):\(containerPort)"
         case .custom(let options):
             return options
-        case .command(_), .credentials(username: _, password: _):
+        case .command(_), .credentials(_, _):
             return ""
         }
     }
@@ -141,7 +140,7 @@ public enum DiscoveryDockerOptions {
 extension Array where Element == DiscoveryDockerOptions {
     func containsVolume() -> Bool {
         contains(where: { option in
-            if case .volume(_,_) = option {
+            if case .volume(_, _) = option {
                 return true
             }
             return false

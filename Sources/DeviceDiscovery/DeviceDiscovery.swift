@@ -15,7 +15,6 @@ import NetService
 /// Responsible for running a discovery in the given domain for the specified `Device.Type`.
 /// The discovery can be configured using the `configuration` property of the device object.
 public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDelegate {
-    
     /// Defines the type of the post discovery action that will be performed on the found device.
     public enum PostActionType {
         /// Use to pass a `PostDiscoveryAction` object that has been implemented in Swift.
@@ -26,7 +25,7 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
         
         var identifier: ActionIdentifier {
             switch self {
-            case .action(let PostAction):
+            case .action(let PostAction): // swiftlint:disable:this identifier_name
                 return PostAction.identifier
             case .docker(let dockerAction):
                 return dockerAction.identifier
@@ -144,8 +143,8 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
                 
                 var foundDevices: Int
                 switch actionType {
-                case .action(let postDiscoveryAction):
-                    let act = postDiscoveryAction.init()
+                case .action(let PostDiscoveryAction): // swiftlint:disable:this identifier_name
+                    let act = PostDiscoveryAction.init() // swiftlint:disable:this explicit_init
                     foundDevices = try act.run(device, on: self.eventLoopGroup, client: sshClient).wait()
                 case .docker(let dockerDiscoveryAction):
                     foundDevices = try runDockerImage(dockerDiscoveryAction, sshClient: sshClient)
