@@ -157,6 +157,9 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
                 
                 performedActions[actionType.identifier] = foundDevices
             }
+            // close channel after action ran
+            sshClient?.closeNonThrowing()
+            
             results.append(DiscoveryResult(device: device, foundEndDevices: performedActions))
         }
         return results

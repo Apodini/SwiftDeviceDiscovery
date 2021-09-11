@@ -157,4 +157,15 @@ public class SSHClient {
         try channel?.close().wait()
         try group.syncShutdownGracefully()
     }
+    
+    /// Closes all channels and eventloops and suppresses any error that may be thrown.
+    internal func closeNonThrowing() {
+        do {
+            try childChannel?.close().wait()
+            try channel?.close().wait()
+            try group.syncShutdownGracefully()
+        } catch {
+            // ignore error
+        }
+    }
 }
