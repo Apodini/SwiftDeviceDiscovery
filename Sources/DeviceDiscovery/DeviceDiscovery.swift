@@ -23,7 +23,7 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
         /// This image does not have to be written in Swift.
         case docker(DockerDiscoveryAction)
         
-        var identifier: ActionIdentifier {
+        public var identifier: ActionIdentifier {
             switch self {
             case .action(let PostAction): // swiftlint:disable:this identifier_name
                 return PostAction.identifier
