@@ -64,9 +64,9 @@ public extension Device {
         service.macAddress()
     }
     /// An `String` representation of the ipv4 address of the service.
-    var ipv4Address: String? {
-        IPAddressResolver.resolveIPAdress(self.hostname, domain: service.domain)
-    }
+//    var ipv4Address: String? {
+//        IPAddressResolver.resolveIPAdress(self.hostname, domain: service.domain)
+//    }
 //    /// An `String` representation of the ipv6 address of the service.
 //    var ipv6Address: String? {
 //        guard let hostname = self.hostname else {
@@ -120,6 +120,7 @@ public struct AnyDevice: Device {
     public var username: String
     
     public var service: NetService
+    public var ipv4Address: String?
 
     public init(
         _ service: NetService,
@@ -131,5 +132,6 @@ public struct AnyDevice: Device {
         Self.identifier = identifier
         self.username = username ?? ""
         self.password = password ?? ""
+        self.ipv4Address = IPAddressResolver.resolveIPAdress(hostname, domain: service.domain)
     }
 }

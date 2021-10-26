@@ -7,8 +7,8 @@
 
 import Foundation
 
-
-internal enum IPAddressResolver {
+/// An Address resolver that tries to resolve the local ip address from the host and domain.
+public enum IPAddressResolver {
     static func resolveIPAdress(_ host: String?, domain: String) -> String? {
         guard let host = host else {
             return nil
