@@ -29,76 +29,15 @@ public struct DeviceIdentifier: RawRepresentable, Hashable, Equatable, Codable {
     }
 }
 
-/// A generic protocol specifying the properties of a `Device`.
-/// A Device can be passed as generic parameter to an `DeviceDiscovery`, telling it to look for that device.
-public protocol Device: CustomStringConvertible {
-    /// The identifer of the device. It has to match the type of the published service. See `DeviceIdentifier` for more infos.
-    static var identifier: DeviceIdentifier { get }
-    /// The `NetService` that has been found in the network corresponding to the specified `identifier`.
-    var service: NetService { get }
-    /// An `Int64` object of the macAddress of the found service.
-    var macAddress: Int64? { get }
-    /// An `String` representation of the ipv4 address of the service.
-    var ipv4Address: String? { get }
-    /// The hostname of the service.
-    var hostname: String? { get }
-    /// The password of the device
-    var password: String { get }
-    /// The username of the device
-    var username: String { get }
-    /// Initializes a new device with the given `NetService` and `DeviceIdentifier`
-    init(_ service: NetService, identifier: DeviceIdentifier, username: String?, password: String?)
-}
-
-public extension Device {
-    /// An instanciated identifier
-    var identifier: DeviceIdentifier {
-        Self.identifier
-    }
-    /// Static equal method
-    static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.identifier == rhs.identifier
-    }
-    /// An `Int64` object of the macAddress of the found service.
-    var macAddress: Int64? {
-        service.macAddress()
-    }
-    /// An `String` representation of the ipv4 address of the service.
-//    var ipv4Address: String? {
-//        IPAddressResolver.resolveIPAdress(self.hostname, domain: service.domain)
-//    }
-//    /// An `String` representation of the ipv6 address of the service.
-//    var ipv6Address: String? {
-//        guard let hostname = self.hostname else {
-//            return nil
-//        }
-//        return IPAddressResolver(hostname).ipv6Address
-//    }
-    /// The hostname of the service.
-    var hostname: String? {
-        service.hostname()
-    }
-    /// A descriptionn of a `Device`
-    var description: String {
-        """
-        identifier: \(Self.identifier.rawValue),
-        hostname: \(String(describing: hostname)),
-        ipAddress: \(String(describing: ipv4Address)),
-        macAddress: \(String(describing: macAddress)),
-        service: \(service)
-        """
-    }
-}
-
 extension NetService {
     func hostname() -> String {
         name.components(separatedBy: .whitespaces)[0]
     }
     
-    func macAddress() -> Int64? {
+    func macAddress() -> Int64 {
         let address = name.components(separatedBy: .whitespaces)[1]
             .replacingOccurrences(of: ["[", "]", ":"], with: "")
-        return Int64(address, radix: 16)
+        return Int64(address, radix: 16) ?? -1
     }
 }
 
@@ -113,14 +52,30 @@ extension String {
 }
 
 /// A type agnostic implementation of `Device` that is used in `DeviceDiscovery`
-public struct AnyDevice: Device {
+public struct Device: Equatable {
     public static var identifier: DeviceIdentifier = .emptyIdentifier
     
-    public var password: String
-    public var username: String
+    public let password: String
+    public let username: String
     
-    public var service: NetService
-    public var ipv4Address: String?
+    public let ipv4Address: String?
+    public let hostname: String
+    public let macAddress: Int64
+    
+    internal let service: NetService
+    
+    public var description: String {
+        """
+        identifier: \(Self.identifier.rawValue),
+        hostname: \(hostname)),
+        ipAddress: \(ipv4Address ?? "")),
+        macAddress: \(macAddress))
+        """
+    }
+    
+    public var identifier: DeviceIdentifier {
+        Self.identifier
+    }
 
     public init(
         _ service: NetService,
@@ -132,6 +87,13 @@ public struct AnyDevice: Device {
         Self.identifier = identifier
         self.username = username ?? ""
         self.password = password ?? ""
+        self.hostname = service.hostname()
+        self.macAddress = service.macAddress()
+        
         self.ipv4Address = IPAddressResolver.resolveIPAdress(hostname, domain: service.domain)
+    }
+    
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.identifier == rhs.identifier
     }
 }

@@ -43,7 +43,7 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
     private let browser = NetServiceBrowser()
     private let logger = Logger(label: "device.discovery: discovery")
     
-    private var devices: [AnyDevice]
+    private var devices: [Device]
     
     /// The `PostDiscoveryAction`s that will be performed on found devices.
     /// The default action is `LIFXDeviceDiscoveryAction`
@@ -111,7 +111,7 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
     public func netServiceBrowser(_ browser: NetServiceBrowser, didFind service: NetService, moreComing: Bool) {
         logger.info("Found service: \(service)")
         
-        let device = AnyDevice(
+        let device = Device(
             service,
             identifier: self.identifier,
             username: configuration.typedValue(for: .username, to: String.self),
