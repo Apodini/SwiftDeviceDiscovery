@@ -122,7 +122,7 @@ public class SSHClient {
     /// - Parameter cmd: The execution command
     /// - Parameter responseHandler: A callback function that is called for every chunk of output.
     @discardableResult
-    public func execute(cmd: String, responseHandler: ((String) -> Void)? = nil) throws -> Bool {
+    public func executeAsBool(cmd: String, responseHandler: ((String) -> Void)? = nil) throws -> Bool {
         let promise = group.next().makePromise(of: Bool.self)
         self.unwrappedChildChannel.triggerUserOutboundEvent(((self.wrapIn(cmd), responseHandler, promise)), promise: nil)
         return try promise.futureResult.wait()
@@ -132,7 +132,7 @@ public class SSHClient {
     /// - Parameter cmd: The command that is executed remotely
     /// - Parameter responseHandler: The call back function that is call with the result from the request.
     /// - Returns EventLoopFuture<Void>: The void eventloopfuture that is returned
-    public func execute(cmd: String, responseHandler: ((String) -> Void)?) throws -> EventLoopFuture<Void> {
+    public func execute(cmd: String, responseHandler: ((String) -> Void)? = nil) throws -> EventLoopFuture<Void> {
         self.unwrappedChildChannel.triggerUserOutboundEvent((self.wrapIn(cmd), responseHandler))
     }
     

@@ -27,11 +27,16 @@ extension ActionIdentifier: CustomStringConvertible {
     }
 }
 
-/// A protocol that can be implemented to specify a `PostDiscoveryAction`. These will be executed after the discovery phase and
-/// allow to for custom actions on the found device. Typically it is used to search for end devices that are connected to the found device.
-public protocol PostDiscoveryAction {
+/// Wrapping protocol defining a PostAction that can either be a Swift package or Docker image
+public protocol PostAction {
     /// The identifier object of a `PostDiscoveryAction`.
     static var identifier: ActionIdentifier { get }
+}
+
+
+/// A protocol that can be implemented to specify a `PostDiscoveryAction`. These will be executed after the discovery phase and
+/// allow to for custom actions on the found device. Typically it is used to search for end devices that are connected to the found device.
+public protocol PostDiscoveryAction: PostAction {
     /// Default empty initializer.
     init()
     /// Performs the `PostDiscoveryAction`.
@@ -65,9 +70,9 @@ extension DiscoveryResult: Equatable {
 /// **NOTE**
 /// The provided docker image need to write the __number__ (as an integer) of results found to the file specified by `fileUrl`.
 /// Otherwise the discovery will not be able to execute the action correctly.  It is also recommend to use to the `volume` option
-public struct DockerDiscoveryAction {
-    /// An identifier for the docker action
-    public let identifier: ActionIdentifier
+public struct DockerDiscoveryAction: PostAction {
+    /// A static identifier of the docker action
+    public static var identifier = ActionIdentifier("")
     /// The name of the docker image
     public let imageName: String
     /// The file url to which the results file is saved
@@ -86,7 +91,7 @@ public struct DockerDiscoveryAction {
         fileUrl: URL,
         options: [DiscoveryDockerOptions] = []
     ) {
-        self.identifier = identifier
+        Self.identifier = identifier
         self.imageName = imageName
         self.fileUrl = fileUrl
         self.options = options

@@ -44,7 +44,7 @@ public extension SSHClient {
         }
 
         private func dirExists(on path: URL) throws -> Bool {
-            try client.execute(cmd: "cd \(path.path)")
+            try client.executeAsBool(cmd: "cd \(path.path)")
         }
 
         /// Creates a directory at the given `URL` with the given permissions
