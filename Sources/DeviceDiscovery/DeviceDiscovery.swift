@@ -171,8 +171,8 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
         }
         
         try sshClient?.bootstrap()
-        try sshClient?.execute(cmd: "sudo docker login -u \(credentials.0) -p \(credentials.1)")
-        try sshClient?.execute(cmd: "sudo chmod 777 \(dockerAction.fileUrl.path)")
+        try sshClient?.executeAsBool(cmd: "sudo docker login -u \(credentials.0) -p \(credentials.1)")
+        try sshClient?.executeAsBool(cmd: "sudo chmod 777 \(dockerAction.fileUrl.path)")
         
         let command: String = {
             let cmd: String = "sudo docker run --rm "
@@ -183,7 +183,7 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
                 .appending(" \(dockerAction.options.map { $0.command }.joined(separator: " "))")
         }()
         
-        try sshClient?.execute(cmd: command)
+        try sshClient?.executeAsBool(cmd: command)
         
         var responseString = ""
         sshClient?.executeWithAssertion(cmd: "cat \(dockerAction.fileUrl.path)", responseHandler: { response in
