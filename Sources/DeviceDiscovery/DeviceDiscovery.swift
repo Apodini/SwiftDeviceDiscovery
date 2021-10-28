@@ -41,7 +41,7 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
     private var eventLoopGroup: EventLoopGroup
     
     private let browser = NetServiceBrowser()
-    private let logger = Logger(label: "device.discovery: discovery")
+    private let logger: Logger
     
     private var devices: [Device]
     
@@ -57,7 +57,12 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
     /// Initializes a `DeviceDiscovery` object
     /// - Parameter identifier: The `DeviceIdentifier` that should be searched for.
     /// - Parameter domain: The `Domain` in which the `DeviceDiscovery` will be looking for.
-    public init(_ identifier: DeviceIdentifier, domain: Domain = .local) {
+    /// - Parameter logger: The Logger used during the lifetime of the discovery
+    public init(
+        _ identifier: DeviceIdentifier,
+        domain: Domain = .local,
+        logger: Logger = Logger(label: "device.discovery: discovery")
+    ) {
         self.identifier = identifier
         self.domain = domain
         self.devices = []
@@ -65,6 +70,7 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
         
         // Default actions
         self.actions = []
+        self.logger = logger
     }
     
     @discardableResult
@@ -109,14 +115,18 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
     }
     
     public func netServiceBrowser(_ browser: NetServiceBrowser, didFind service: NetService, moreComing: Bool) {
-        logger.info("Found service: \(service)")
-        
         let device = Device(
             service,
             identifier: self.identifier,
             username: configuration.typedValue(for: .username, to: String.self),
             password: configuration.typedValue(for: .password, to: String.self)
         )
+        guard device.ipv4Address != nil, !(device.ipv4Address?.isEmpty ?? true) else {
+            return
+        }
+        logger.info("Found device: \(device.description)")
+        
+        
         devices.append(device)
     }
    

@@ -8,6 +8,7 @@
 import Foundation
 import DeviceDiscovery
 import NIO
+import Logging
 
 @main
 enum Tester {
