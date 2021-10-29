@@ -27,8 +27,8 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
             switch self {
             case .action(let PostAction): // swiftlint:disable:this identifier_name
                 return PostAction.identifier
-            case .docker(_):
-                return DockerDiscoveryAction.identifier
+            case .docker(let dockerAction):
+                return dockerAction.identifier
             }
         }
     }

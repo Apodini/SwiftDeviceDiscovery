@@ -67,9 +67,9 @@ public struct Device: Equatable {
     public var description: String {
         """
         identifier: \(Self.identifier.rawValue),
-        hostname: \(hostname)),
-        ipAddress: \(ipv4Address ?? "")),
-        macAddress: \(macAddress))
+        hostname: \(hostname),
+        ipAddress: \(ipv4Address ?? ""),
+        macAddress: \(macAddress)
         """
     }
     

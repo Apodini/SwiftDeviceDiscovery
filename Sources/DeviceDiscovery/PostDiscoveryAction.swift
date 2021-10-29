@@ -28,15 +28,14 @@ extension ActionIdentifier: CustomStringConvertible {
 }
 
 /// Wrapping protocol defining a PostAction that can either be a Swift package or Docker image
-public protocol PostAction {
-    /// The identifier object of a `PostDiscoveryAction`.
-    static var identifier: ActionIdentifier { get }
-}
-
+public protocol PostAction {}
 
 /// A protocol that can be implemented to specify a `PostDiscoveryAction`. These will be executed after the discovery phase and
 /// allow to for custom actions on the found device. Typically it is used to search for end devices that are connected to the found device.
 public protocol PostDiscoveryAction: PostAction {
+    /// The identifier object of a `PostDiscoveryAction`.
+    static var identifier: ActionIdentifier { get }
+    
     /// Default empty initializer.
     init()
     /// Performs the `PostDiscoveryAction`.
@@ -72,7 +71,7 @@ extension DiscoveryResult: Equatable {
 /// Otherwise the discovery will not be able to execute the action correctly.  It is also recommend to use to the `volume` option
 public struct DockerDiscoveryAction: PostAction {
     /// A static identifier of the docker action
-    public static var identifier = ActionIdentifier("")
+    public var identifier: ActionIdentifier
     /// The name of the docker image
     public let imageName: String
     /// The file url to which the results file is saved
@@ -91,7 +90,7 @@ public struct DockerDiscoveryAction: PostAction {
         fileUrl: URL,
         options: [DiscoveryDockerOptions] = []
     ) {
-        Self.identifier = identifier
+        self.identifier = identifier
         self.imageName = imageName
         self.fileUrl = fileUrl
         self.options = options
