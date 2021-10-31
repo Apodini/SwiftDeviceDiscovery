@@ -121,7 +121,11 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
             username: configuration.typedValue(for: .username, to: String.self),
             password: configuration.typedValue(for: .password, to: String.self)
         )
-        guard device.ipv4Address != nil, !(device.ipv4Address?.isEmpty ?? true) else {
+        guard
+            device.ipv4Address != nil,
+            !(device.ipv4Address?.isEmpty ?? true),
+            !devices.contains(where: { $0.ipv4Address == device.ipv4Address })
+        else {
             return
         }
         logger.info("Found device: \(device.description)")
