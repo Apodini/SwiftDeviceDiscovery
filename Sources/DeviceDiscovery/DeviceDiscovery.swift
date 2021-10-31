@@ -140,7 +140,7 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
     
     private func runPostDiscoveryActions() throws -> [DiscoveryResult] {
         var results: [DiscoveryResult] = []
-        for device in self.devices {
+        for device in Set(self.devices) {
             logger.notice("Performing post discovery actions for \(String(describing: device.hostname))")
             guard let runPostActions = self.configuration.typedValue(for: .runPostActions, to: Bool.self),
                   runPostActions else {
