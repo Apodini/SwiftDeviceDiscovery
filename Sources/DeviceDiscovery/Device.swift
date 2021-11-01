@@ -52,7 +52,7 @@ extension String {
 }
 
 /// A type agnostic implementation of `Device` that is used in `DeviceDiscovery`
-public struct Device: Equatable, Hashable {
+public struct Device: Equatable {
     public static var identifier: DeviceIdentifier = .emptyIdentifier
     
     public let password: String
