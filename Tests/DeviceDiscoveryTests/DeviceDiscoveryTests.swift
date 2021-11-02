@@ -10,7 +10,7 @@ final class DeviceDiscoveryTests: XCTestCase {
             .password: "test1234",
             .runPostActions: false
         ]
-        let results = try discovery.run(1).wait()
+        let results = try discovery.run().wait()
         XCTAssert(results.isEmpty)
     }
 }

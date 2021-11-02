@@ -20,6 +20,6 @@ enum Tester {
             .password: "test1234",
             .runPostActions: true
         ]
-        try discovery.run(1)
+        try discovery.run()
     }
 }
