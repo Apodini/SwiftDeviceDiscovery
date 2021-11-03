@@ -77,10 +77,13 @@ public class DeviceDiscovery: NSObject, NetServiceBrowserDelegate, NetServiceDel
     /// Runs the device discovery with the given timeout.
     /// - Parameter timeout: Specifies how it will wait until the post discovery actions are performed. Default is 30 seconds.
     /// - Returns [DiscoveryResult]: Returns a Array of `DiscoveryResult` containing the found information.
-    public func run() throws -> EventLoopFuture<[DiscoveryResult]> {
+    public func run(_ timeout: TimeInterval = 0.25) throws -> EventLoopFuture<[DiscoveryResult]> {
         self.browser.delegate = self
         browser.searchForServices(ofType: self.identifier.rawValue, inDomain: self.domain.value)
 
+        let now = Date()
+        RunLoop.current.run(until: now.addingTimeInterval(timeout))
+        
         logger.notice("Finished device search.")
         let results = try runPostDiscoveryActions()
         
