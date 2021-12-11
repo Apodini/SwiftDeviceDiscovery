@@ -41,7 +41,7 @@ public struct DockerDiscoveryAction {
     public let options: [DiscoveryDockerOptions]
 ```
 
- When using a docker image, you have to follow certain design constrains:
+ When using a docker image, you have to follow certain design constraints:
 - The result of the docker image has to be a file containing an integer that represents the number of found devices. This has to be done to ensure some sort of unified API. Returning anything other will result in an error.
 - The result file has to be written to the specified `fileUrl`. 
 
