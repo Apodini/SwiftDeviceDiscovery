@@ -37,4 +37,4 @@ jobs:
         assignees: ApodiniBot
         committer: ApodiniBot <ApodiniBot@users.noreply.github.com>
         author: ApodiniBot <ApodiniBot@users.noreply.github.com>
-        reviewers: PSchmiedmayer
+        reviewers: hendesi
