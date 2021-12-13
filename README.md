@@ -1,3 +1,13 @@
+<!--
+                  
+This source file is part of the Apodini Template open source project
+
+SPDX-FileCopyrightText: 2021 Paul Schmiedmayer and the project authors (see CONTRIBUTORS.md) <paul.schmiedmayer@tum.de>
+
+SPDX-License-Identifier: MIT
+             
+-->
+
 # SwiftDeviceDiscovery
 
 [![Build and Test](https://github.com/Apodini/SwiftDeviceDiscovery/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/Apodini/SwiftDeviceDiscovery/actions/workflows/build-and-test.yml)
