@@ -9,6 +9,9 @@
 name: SwiftLint
 
 on:
+  push:
+    branches:
+      - develop
   pull_request:
   workflow_dispatch:
 
