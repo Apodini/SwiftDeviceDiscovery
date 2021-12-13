@@ -16,7 +16,7 @@ This repository contains __SwiftDeviceDiscovery__, a highly customizable and eas
 
 ## Usage
 SwiftDeviceDiscovery can be used to detect devices of certain type in the local network. The discovery is easy to use and can be setup quickly:
-```
+```swift
 let discovery = DeviceDiscovery(DeviceIdentifier("_workstation._tcp."))
 discovery.configuration = [
     .username: "ubuntu",
@@ -29,7 +29,7 @@ The `DeviceDiscovery` is initialized by passing a device identifier that encapsu
 A `DeviceDiscovery` can be further customized by pass multiple `ConfigurationProperty`. These are pre-defined or custom options that can be used to provide additional context for the discovery. The pre-defined options need to passed in order to allow __ssh access__. The option `runPostActions` can be set if you have defined post actions that will be executed on the found device. An example: You have a raspberry pi that is a WAP to which are several sub devices connected. To find those, you would need to run some sort of discovery on the device it self as they would not be found in your local network. That's what `PostDiscoveryActions` are for.
 
 You can either define them by implementing the `PostDiscoveryAction` protocol. This gives you access to a `SSHClient` on which you can execute custom commands:
-```
+```swift
 public protocol PostDiscoveryAction {
     static var identifier: ActionIdentifier { get }
     
@@ -39,7 +39,7 @@ public protocol PostDiscoveryAction {
 }
 ```
 Alternatively, it is also possbile to pass a `DockerDiscoveryAction` that encapsulates a docker image.
-```
+```swift
 public struct DockerDiscoveryAction {
     
     public let identifier: ActionIdentifier
@@ -49,6 +49,7 @@ public struct DockerDiscoveryAction {
     public let fileUrl: URL
     
     public let options: [DiscoveryDockerOptions]
+}
 ```
 
  When using a docker image, you have to follow certain design constraints:
@@ -58,7 +59,7 @@ public struct DockerDiscoveryAction {
 You can pass options to a `DockerDiscoveryAction` to customize the run command of the image, e.g. by setting a volume. When your image is on a private repo, it is also expected to provide a `.credentials` option to be able to login into docker. In contrary to the `PostDiscoveryAction`, using a docker image does not constrain you to the swift language. As long as the image meets the afore-mentioned requirements, you can use it with the discovery. 
 
 When you have decided how you want to implement the post actions, you can pass them to this discovery like this:
-```
+```swift
 discovery.registerActions(
     .docker(
         DockerDiscoveryAction(
@@ -79,7 +80,7 @@ discovery.registerActions(
 ```
 
 Start the discovery by calling run:
-```
+```swift
 try discovery.run(1)
 ```
 
