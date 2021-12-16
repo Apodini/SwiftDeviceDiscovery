@@ -33,17 +33,30 @@ public enum IPAddressResolver {
         }
         
         var ipname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
-        let data = addresses[0]
-        data.withUnsafeBytes { (pointer: UnsafeRawBufferPointer) -> Void in
-            let sockaddrPtr = pointer.bindMemory(to: sockaddr.self)
-            guard let unsafePtr = sockaddrPtr.baseAddress else {
-                return
+        for data in addresses {
+            data.withUnsafeBytes { (pointer: UnsafeRawBufferPointer) -> Void in
+                let sockaddrPtr = pointer.bindMemory(to: sockaddr.self)
+                guard let unsafePtr = sockaddrPtr.baseAddress else {
+                    return
+                }
+                guard getnameinfo(unsafePtr, socklen_t(data.count), &ipname, socklen_t(ipname.count), nil, 0, NI_NUMERICHOST) == 0 else {
+                    return
+                }
             }
-            guard getnameinfo(unsafePtr, socklen_t(data.count), &ipname, socklen_t(ipname.count), nil, 0, NI_NUMERICHOST) == 0 else {
-                return
+            let ipAddress = String(cString: ipname)
+            if ipAddress.isIPv4() {
+                return ipAddress
             }
         }
-        let ipAddress = String(cString: ipname)
-        return ipAddress
+        return nil
+    }
+}
+
+extension String {
+    func isIPv4() -> Bool {
+        var sin = sockaddr_in()
+        return self.withCString { cstring in
+            inet_pton(AF_INET, cstring, &sin.sin_addr)
+        } == 1
     }
 }

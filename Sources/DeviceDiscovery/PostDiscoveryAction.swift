@@ -131,7 +131,7 @@ public enum DiscoveryDockerOptions {
             return options
         case .network(let host):
             return "--network=\(host)"
-        case .command(_), .credentials(_, _):
+        case .command, .credentials:
             return ""
         }
     }
@@ -149,7 +149,7 @@ public enum DiscoveryDockerOptions {
 extension Array where Element == DiscoveryDockerOptions {
     func containsVolume() -> Bool {
         contains(where: { option in
-            if case .volume(_, _) = option {
+            if case .volume = option {
                 return true
             }
             return false
